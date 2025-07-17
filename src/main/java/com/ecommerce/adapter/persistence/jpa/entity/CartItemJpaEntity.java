@@ -6,26 +6,33 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "carts")
+@Table(name = "cart_items")
 @Data
 @EntityListeners(AuditingEntityListener.class)
-public class CartJpaEntity {
+public class CartItemJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cart_id")
+    @Column(name = "cart_item_id")
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    private UserJpaEntity user;
+    @ManyToOne
+    @JoinColumn(name = "cart_id", nullable = false)
+    private CartJpaEntity cart;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItemJpaEntity> items;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private ProductJpaEntity product;
+
+    @Column(nullable = false)
+    private Integer quantity;
+
+    @Column(nullable = false)
+    private BigDecimal price;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

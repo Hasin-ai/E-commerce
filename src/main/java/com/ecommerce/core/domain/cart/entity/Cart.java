@@ -1,18 +1,18 @@
 package com.ecommerce.core.domain.cart.entity;
 
-import com.ecommerce.core.domain.product.entity.Product;
+import com.ecommerce.core.domain.user.entity.User;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
-public class CartItem {
+public class Cart {
 
     private Long id;
-    private Product product;
-    private Integer quantity;
-    private BigDecimal price;
+    private User user;
+    private List<CartItem> items = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

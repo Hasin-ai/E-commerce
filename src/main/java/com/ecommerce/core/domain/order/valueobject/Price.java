@@ -1,4 +1,4 @@
-package com.ecommerce.core.domain.product.valueobject;
+package com.ecommerce.core.domain.order.valueobject;
 
 import com.ecommerce.shared.exception.ValidationException;
 import java.math.BigDecimal;
