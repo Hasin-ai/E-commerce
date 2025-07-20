@@ -3,17 +3,15 @@ package com.ecommerce.core.usecase.product;
 import com.ecommerce.core.domain.product.entity.Product;
 import com.ecommerce.core.domain.product.repository.ProductRepository;
 import com.ecommerce.shared.exception.ResourceNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@RequiredArgsConstructor
 public class GetProductUseCase {
 
     private final ProductRepository productRepository;
-
-    public GetProductUseCase(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
 
     public GetProductResponse execute(Long productId) {
         Product product = productRepository.findById(productId)

@@ -134,4 +134,12 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .map(productEntityMapper::toDomainEntity)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Product> getRecommendations(String userId) {
+        // This is a simplified implementation. In a real-world scenario,
+        // we would use a recommendation engine or algorithm based on user preferences.
+        // For now, we'll just return featured products as recommendations.
+        return findFeaturedProducts();
+    }
 }

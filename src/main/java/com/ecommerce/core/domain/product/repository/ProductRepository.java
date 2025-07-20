@@ -40,4 +40,6 @@ public interface ProductRepository {
     List<Product> findAll(int page, int size);
 
     List<Product> findActiveProducts(int page, int size);
+
+    List<Product> getRecommendations(String userId);
 }

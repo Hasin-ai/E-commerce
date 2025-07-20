@@ -27,4 +27,9 @@ public class CartRepositoryImpl implements CartRepository {
         CartJpaEntity cartJpaEntity = cartEntityMapper.toJpaEntity(cart);
         return cartEntityMapper.toDomain(cartJpaRepository.save(cartJpaEntity));
     }
+
+    @Override
+    public void deleteByUserId(Long userId) {
+        cartJpaRepository.deleteByUserId(userId);
+    }
 }

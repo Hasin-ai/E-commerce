@@ -1,11 +1,12 @@
 package com.ecommerce.core.usecase.order;
 
+
 import com.ecommerce.core.domain.cart.entity.Cart;
 import com.ecommerce.core.domain.cart.repository.CartRepository;
 import com.ecommerce.core.domain.order.entity.Order;
 import com.ecommerce.core.domain.order.entity.OrderItem;
 import com.ecommerce.core.domain.order.repository.OrderRepository;
-import com.ecommerce.core.domain.order.valueobject.Price;
+import com.ecommerce.core.domain.product.valueobject.Price;
 import com.ecommerce.core.domain.product.entity.Product;
 import com.ecommerce.core.domain.product.repository.ProductRepository;
 import com.ecommerce.shared.exception.BusinessException;
@@ -69,3 +70,4 @@ public class PlaceOrderUseCase {
         private Long orderId;
     }
 }
+

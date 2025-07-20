@@ -3,9 +3,11 @@ package com.ecommerce.core.domain.product.entity;
 import com.ecommerce.core.domain.product.valueobject.Price;
 import com.ecommerce.core.domain.product.valueobject.SKU;
 import com.ecommerce.shared.exception.BusinessException;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.time.LocalDateTime;
 
+@Document(indexName = "products")
 public class Product {
     private Long id;
     private String name;

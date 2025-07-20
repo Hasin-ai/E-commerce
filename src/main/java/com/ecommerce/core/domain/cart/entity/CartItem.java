@@ -16,4 +16,7 @@ public class CartItem {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public Long getProductId() {
+        return product.getId();
+    }
 }

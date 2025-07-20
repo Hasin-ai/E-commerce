@@ -4,7 +4,7 @@ import com.ecommerce.adapter.persistence.jpa.entity.OrderJpaEntity;
 import com.ecommerce.adapter.persistence.jpa.entity.OrderItemJpaEntity;
 import com.ecommerce.core.domain.order.entity.Order;
 import com.ecommerce.core.domain.order.entity.OrderItem;
-import com.ecommerce.core.domain.order.valueobject.Price;
+import com.ecommerce.core.domain.product.valueobject.Price;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -20,7 +20,9 @@ public class OrderEntityMapper {
         jpaEntity.setStatus(order.getStatus());
         jpaEntity.setCreatedAt(order.getCreatedAt());
         jpaEntity.setUpdatedAt(order.getUpdatedAt());
-        jpaEntity.setItems(order.getItems().stream().map(item -> toJpaEntity(item, jpaEntity)).collect(Collectors.toList()));
+        if (order.getItems() != null) {
+            jpaEntity.setItems(order.getItems().stream().map(item -> toJpaEntity(item, jpaEntity)).collect(Collectors.toList()));
+        }
         return jpaEntity;
     }
 

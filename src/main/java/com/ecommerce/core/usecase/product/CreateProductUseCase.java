@@ -5,17 +5,15 @@ import com.ecommerce.core.domain.product.repository.ProductRepository;
 import com.ecommerce.core.domain.product.valueobject.Price;
 import com.ecommerce.core.domain.product.valueobject.SKU;
 import com.ecommerce.shared.exception.BusinessException;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@RequiredArgsConstructor
 public class CreateProductUseCase {
 
     private final ProductRepository productRepository;
-
-    public CreateProductUseCase(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
 
     public CreateProductResponse execute(CreateProductRequest request) {
         // Validate input

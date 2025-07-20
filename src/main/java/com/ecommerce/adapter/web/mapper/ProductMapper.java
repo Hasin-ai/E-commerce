@@ -6,6 +6,7 @@ import com.ecommerce.adapter.web.dto.response.ProductResponseDto;
 import com.ecommerce.core.usecase.product.CreateProductUseCase;
 import com.ecommerce.core.usecase.product.GetProductUseCase;
 import com.ecommerce.core.usecase.product.UpdateProductUseCase;
+import com.ecommerce.core.domain.product.entity.Product;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -68,6 +69,23 @@ public class ProductMapper {
                 response.isFeatured(),
                 response.getCreatedAt(),
                 response.getUpdatedAt()
+        );
+    }
+
+    public ProductResponseDto toProductResponse(Product product) {
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                product.getSlug(),
+                product.getDescription(),
+                product.getSku().getValue(),
+                product.getBasePrice().getAmount(),
+                product.getSalePrice() != null ? product.getSalePrice().getAmount() : null,
+                product.getBasePrice().getCurrency(),
+                product.isActive(),
+                product.isFeatured(),
+                product.getCreatedAt(),
+                product.getUpdatedAt()
         );
     }
 }
