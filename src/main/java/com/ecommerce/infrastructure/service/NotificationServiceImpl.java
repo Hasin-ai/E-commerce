@@ -1,7 +1,7 @@
 package com.ecommerce.infrastructure.service;
 
 import com.ecommerce.core.domain.notification.Notification;
-import com.ecommerce.core.domain.notification.NotificationRepository;
+import com.ecommerce.core.domain.notification.repository.NotificationRepository;
 import com.ecommerce.core.usecase.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

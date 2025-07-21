@@ -1,6 +1,5 @@
-package com.ecommerce.adapter.persistence.jpa.repository;
+package com.ecommerce.core.domain.notification;
 
-import com.ecommerce.core.domain.notification.Notification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface NotificationJpaRepository extends JpaRepository<Notification, Long> {
+public interface NotificationJpaDataRepository extends JpaRepository<Notification, Long> {
 
     List<Notification> findByUserIdOrderByCreatedAtDesc(Long userId);
 
