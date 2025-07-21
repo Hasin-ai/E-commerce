@@ -21,8 +21,9 @@ public class JsonType implements UserType<Map<String, String>> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Class<Map<String, String>> returnedClass() {
-        return (Class<Map<String, String>>) (Class) Map.class;
+        return (Class<Map<String, String>>) (Class<?>) Map.class;
     }
 
     @Override
@@ -77,6 +78,7 @@ public class JsonType implements UserType<Map<String, String>> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Map<String, String> assemble(Serializable cached, Object owner) {
         return deepCopy((Map<String, String>) cached);
     }

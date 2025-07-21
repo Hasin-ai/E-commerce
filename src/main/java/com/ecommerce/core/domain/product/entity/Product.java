@@ -18,6 +18,7 @@ public class Product {
     private Price salePrice;
     private boolean isActive;
     private boolean isFeatured;
+    private Integer stock; // Added stock field
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -32,6 +33,7 @@ public class Product {
         this.basePrice = basePrice;
         this.isActive = true;
         this.isFeatured = false;
+        this.stock = 0; // Initialize stock to 0
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -64,7 +66,43 @@ public class Product {
     }
 
     public boolean isAvailable() {
-        return isActive;
+        return isActive && stock > 0;
+    }
+
+    // Stock management methods
+    public Price getCurrentPrice() {
+        return salePrice != null ? salePrice : basePrice;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void updateStock(Integer newStock) {
+        if (newStock < 0) {
+            throw new BusinessException("Stock cannot be negative");
+        }
+        this.stock = newStock;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void reserveStock(Integer quantity) {
+        if (quantity <= 0) {
+            throw new BusinessException("Quantity must be positive");
+        }
+        if (this.stock < quantity) {
+            throw new BusinessException("Insufficient stock available");
+        }
+        this.stock -= quantity;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void restoreStock(Integer quantity) {
+        if (quantity <= 0) {
+            throw new BusinessException("Quantity must be positive");
+        }
+        this.stock += quantity;
+        this.updatedAt = LocalDateTime.now();
     }
 
     // Private validation methods
@@ -109,6 +147,10 @@ public class Product {
 
     public void setFeatured(boolean featured) {
         isFeatured = featured;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
     }
 
     // Package-private setters for repository use

@@ -5,7 +5,8 @@ import com.ecommerce.adapter.web.dto.response.OrderItemResponseDto;
 import com.ecommerce.adapter.web.dto.response.OrderResponseDto;
 import com.ecommerce.core.domain.order.entity.Order;
 import com.ecommerce.core.domain.order.entity.OrderItem;
-import com.ecommerce.core.usecase.order.PlaceOrderUseCase;
+import com.ecommerce.core.usecase.order.PlaceOrderRequest;
+import com.ecommerce.core.usecase.order.CreateOrderRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
@@ -13,9 +14,22 @@ import java.util.stream.Collectors;
 @Component
 public class OrderMapper {
 
-    public PlaceOrderUseCase.PlaceOrderRequest toPlaceOrderRequest(CreateOrderRequestDto dto) {
-        return PlaceOrderUseCase.PlaceOrderRequest.builder()
+    public PlaceOrderRequest toPlaceOrderRequest(Long userId, Long orderId) {
+        return PlaceOrderRequest.builder()
+                .userId(userId)
+                .orderId(orderId)
+                .build();
+    }
+
+    public CreateOrderRequest toCreateOrderRequest(CreateOrderRequestDto dto) {
+        return CreateOrderRequest.builder()
                 .userId(dto.getUserId())
+                .items(dto.getItems().stream()
+                    .map(item -> CreateOrderRequest.OrderItemRequest.builder()
+                        .productId(item.getProductId())
+                        .quantity(item.getQuantity())
+                        .build())
+                    .collect(Collectors.toList()))
                 .build();
     }
 
