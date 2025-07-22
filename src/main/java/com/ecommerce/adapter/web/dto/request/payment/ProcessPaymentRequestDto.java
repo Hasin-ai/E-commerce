@@ -1,39 +1,66 @@
 package com.ecommerce.adapter.web.dto.request.payment;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-/**
- * DTO for processing a payment after a user has completed the payment flow.
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ProcessPaymentRequestDto {
-    
-    /**
-     * The payment intent ID from Stripe.
-     */
+
+    @JsonProperty("paymentIntentId")
     @NotBlank(message = "Payment intent ID is required")
     private String paymentIntentId;
-    
-    /**
-     * The payment method used (e.g., "card", "bank_transfer").
-     */
+
+    @JsonProperty("paymentMethod")
     @NotBlank(message = "Payment method is required")
     private String paymentMethod;
-    
-    /**
-     * The last four digits of the card used (if applicable).
-     */
+
+    @JsonProperty("cardLastFour")
     private String cardLastFour;
-    
-    /**
-     * The brand of the card used (if applicable).
-     */
+
+    @JsonProperty("cardBrand")
     private String cardBrand;
+
+    // Default constructor
+    public ProcessPaymentRequestDto() {}
+
+    // Constructor
+    public ProcessPaymentRequestDto(String paymentIntentId, String paymentMethod,
+                                   String cardLastFour, String cardBrand) {
+        this.paymentIntentId = paymentIntentId;
+        this.paymentMethod = paymentMethod;
+        this.cardLastFour = cardLastFour;
+        this.cardBrand = cardBrand;
+    }
+
+    // Getters and Setters
+    public String getPaymentIntentId() {
+        return paymentIntentId;
+    }
+
+    public void setPaymentIntentId(String paymentIntentId) {
+        this.paymentIntentId = paymentIntentId;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getCardLastFour() {
+        return cardLastFour;
+    }
+
+    public void setCardLastFour(String cardLastFour) {
+        this.cardLastFour = cardLastFour;
+    }
+
+    public String getCardBrand() {
+        return cardBrand;
+    }
+
+    public void setCardBrand(String cardBrand) {
+        this.cardBrand = cardBrand;
+    }
 }
