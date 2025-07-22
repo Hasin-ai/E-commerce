@@ -1,7 +1,8 @@
 package com.ecommerce.infrastructure.service;
 
 import com.ecommerce.core.usecase.notification.NotificationService.SmsNotificationRequest;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -10,8 +11,9 @@ import org.springframework.stereotype.Service;
  * This is a mock implementation - replace with real SMS service like Twilio, AWS SNS, etc.
  */
 @Service
-@Slf4j
 public class SmsService {
+
+    private static final Logger log = LoggerFactory.getLogger(SmsService.class);
 
     @Value("${spring.sms.enabled:false}")
     private boolean smsEnabled;

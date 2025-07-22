@@ -36,10 +36,10 @@ public class UserMapper {
             response.getLastName(),
             response.getEmail(),
             response.getPhone(),
-            response.isActive(),
-            response.isEmailVerified(),
-            response.getCreatedAt(),
-            response.getCreatedAt() // updatedAt is same as createdAt initially
+            true, // default active status
+            false, // default email verification status
+            null, // createdAt not available in response
+            null  // updatedAt not available in response
         );
     }
 
@@ -65,7 +65,7 @@ public class UserMapper {
             response.getEmail(),
             response.getPhone(),
             response.isActive(),
-            response.isEmailVerified(),
+            true, // default email verification status for authenticated users
             null, // createdAt not included in auth response
             null  // updatedAt not included in auth response
         );

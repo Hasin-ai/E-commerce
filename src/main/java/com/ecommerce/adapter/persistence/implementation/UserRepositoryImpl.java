@@ -1,99 +1,104 @@
 package com.ecommerce.adapter.persistence.implementation;
 
-import com.ecommerce.adapter.persistence.jpa.entity.UserJpaEntity;
-import com.ecommerce.adapter.persistence.jpa.repository.UserJpaRepository;
-import com.ecommerce.adapter.persistence.mapper.UserEntityMapper;
 import com.ecommerce.core.domain.user.entity.User;
 import com.ecommerce.core.domain.user.repository.UserRepository;
 import com.ecommerce.core.domain.user.valueobject.Email;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import com.ecommerce.core.domain.user.valueobject.UserStatus;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
-
-    private final UserJpaRepository userJpaRepository;
-    private final UserEntityMapper userEntityMapper;
-
-    @Autowired
-    public UserRepositoryImpl(UserJpaRepository userJpaRepository,
-                             UserEntityMapper userEntityMapper) {
-        this.userJpaRepository = userJpaRepository;
-        this.userEntityMapper = userEntityMapper;
-    }
+    
+    private final Map<Long, User> users = new ConcurrentHashMap<>();
+    private final AtomicLong idGenerator = new AtomicLong(1);
 
     @Override
     public User save(User user) {
-        UserJpaEntity jpaEntity = userEntityMapper.toJpaEntity(user);
-        UserJpaEntity savedEntity = userJpaRepository.save(jpaEntity);
-        return userEntityMapper.toDomainEntity(savedEntity);
+        if (user.getId() == null) {
+            user.setId(idGenerator.getAndIncrement());
+        }
+        users.put(user.getId(), user);
+        return user;
     }
 
     @Override
     public Optional<User> findById(Long id) {
-        return userJpaRepository.findById(id)
-            .map(userEntityMapper::toDomainEntity);
+        return Optional.ofNullable(users.get(id));
     }
 
     @Override
     public Optional<User> findByEmail(Email email) {
-        return userJpaRepository.findByEmail(email.getValue())
-            .map(userEntityMapper::toDomainEntity);
+        return users.values().stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<User> findByVerificationToken(String token) {
+        return users.values().stream()
+                .filter(user -> Objects.equals(user.getVerificationToken(), token))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<User> findByResetPasswordToken(String token) {
+        return users.values().stream()
+                .filter(user -> Objects.equals(user.getResetPasswordToken(), token))
+                .findFirst();
+    }
+
+    @Override
+    public List<User> findByStatus(UserStatus status) {
+        return users.values().stream()
+                .filter(user -> user.getStatus() == status)
+                .toList();
     }
 
     @Override
     public List<User> findAll() {
-        return userJpaRepository.findAll()
-            .stream()
-            .map(userEntityMapper::toDomainEntity)
-            .collect(Collectors.toList());
+        return new ArrayList<>(users.values());
     }
 
     @Override
-    public List<User> findActiveUsers() {
-        return userJpaRepository.findByIsActiveTrue()
-            .stream()
-            .map(userEntityMapper::toDomainEntity)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean existsByEmail(Email email) {
-        return userJpaRepository.existsByEmail(email.getValue());
+    public void delete(User user) {
+        users.remove(user.getId());
     }
 
     @Override
     public void deleteById(Long id) {
-        userJpaRepository.deleteById(id);
+        users.remove(id);
+    }
+
+    @Override
+    public boolean existsByEmail(Email email) {
+        return users.values().stream()
+                .anyMatch(user -> user.getEmail().equals(email));
     }
 
     @Override
     public long count() {
-        return userJpaRepository.count();
+        return users.size();
     }
 
     @Override
-    public List<User> findAll(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return userJpaRepository.findAll(pageable)
-            .stream()
-            .map(userEntityMapper::toDomainEntity)
-            .collect(Collectors.toList());
+    public List<User> findActiveUsers() {
+        return findByStatus(UserStatus.ACTIVE);
     }
 
     @Override
-    public List<User> findActiveUsers(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return userJpaRepository.findByIsActiveTrue(pageable)
-            .stream()
-            .map(userEntityMapper::toDomainEntity)
-            .collect(Collectors.toList());
+    public List<User> findInactiveUsers() {
+        return findByStatus(UserStatus.INACTIVE);
+    }
+
+    @Override
+    public List<User> findUsersCreatedAfter(LocalDateTime date) {
+        return users.values().stream()
+                .filter(user -> user.getCreatedAt().isAfter(date))
+                .toList();
     }
 }

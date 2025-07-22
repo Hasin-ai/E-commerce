@@ -1,160 +1,149 @@
 package com.ecommerce.core.domain.product.entity;
 
 import com.ecommerce.core.domain.product.valueobject.Price;
-import com.ecommerce.core.domain.product.valueobject.SKU;
-import com.ecommerce.shared.exception.BusinessException;
-import org.springframework.data.elasticsearch.annotations.Document;
+import com.ecommerce.shared.exception.ValidationException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Document(indexName = "products")
 public class Product {
     private Long id;
     private String name;
-    private String slug;
     private String description;
-    private SKU sku;
-    private Price basePrice;
-    private Price salePrice;
+    private String sku;
+    private Price price;
+    private Long categoryId;
+    private int stockQuantity;
     private boolean isActive;
-    private boolean isFeatured;
-    private Integer stock; // Added stock field
+    private List<String> imageUrls;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String brand;
 
-    // Constructor
-    public Product(String name, String slug, String description,
-                   SKU sku, Price basePrice) {
+    public Product(String name, String description, String sku, Price price, Long categoryId, int stockQuantity) {
         validateName(name);
+        validateDescription(description);
+        validateSku(sku);
+        validateStockQuantity(stockQuantity);
+
         this.name = name;
-        this.slug = slug;
         this.description = description;
         this.sku = sku;
-        this.basePrice = basePrice;
+        this.price = price;
+        this.categoryId = categoryId;
+        this.stockQuantity = stockQuantity;
         this.isActive = true;
-        this.isFeatured = false;
-        this.stock = 0; // Initialize stock to 0
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Business methods
+    public void updateStock(int quantity) {
+        if (quantity < 0) {
+            throw new ValidationException("Stock quantity cannot be negative");
+        }
+        this.stockQuantity = quantity;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public void updatePrice(Price newPrice) {
-        if (newPrice.isNegative()) {
-            throw new BusinessException("Price cannot be negative");
-        }
-        this.basePrice = newPrice;
+        this.price = newPrice;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateSalePrice(Price newSalePrice) {
-        if (newSalePrice != null && newSalePrice.isNegative()) {
-            throw new BusinessException("Sale price cannot be negative");
-        }
-        this.salePrice = newSalePrice;
-        this.updatedAt = LocalDateTime.now();
+    public boolean isInStock() {
+        return stockQuantity > 0;
     }
 
-    public void activate() {
-        this.isActive = true;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void deactivate() {
-        this.isActive = false;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public boolean isAvailable() {
-        return isActive && stock > 0;
-    }
-
-    // Stock management methods
-    public Price getCurrentPrice() {
-        return salePrice != null ? salePrice : basePrice;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void updateStock(Integer newStock) {
-        if (newStock < 0) {
-            throw new BusinessException("Stock cannot be negative");
-        }
-        this.stock = newStock;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void reserveStock(Integer quantity) {
+    public void decreaseStock(int quantity) {
         if (quantity <= 0) {
-            throw new BusinessException("Quantity must be positive");
+            throw new ValidationException("Quantity must be positive");
         }
-        if (this.stock < quantity) {
-            throw new BusinessException("Insufficient stock available");
+        if (stockQuantity < quantity) {
+            throw new ValidationException("Insufficient stock");
         }
-        this.stock -= quantity;
+        this.stockQuantity -= quantity;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void restoreStock(Integer quantity) {
+    public int getStock() {
+        return this.stockQuantity;
+    }
+
+    public void reserveStock(int quantity) {
         if (quantity <= 0) {
-            throw new BusinessException("Quantity must be positive");
+            throw new ValidationException("Quantity must be positive");
         }
-        this.stock += quantity;
+        if (stockQuantity < quantity) {
+            throw new ValidationException("Insufficient stock to reserve");
+        }
+        this.stockQuantity -= quantity;
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Private validation methods
+    // Validation methods
     private void validateName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new BusinessException("Product name cannot be empty");
+            throw new ValidationException("Product name cannot be null or empty");
         }
         if (name.length() > 255) {
-            throw new BusinessException("Product name too long");
+            throw new ValidationException("Product name too long. Maximum length is 255 characters");
         }
     }
 
-    // Getters and setters
+    private void validateDescription(String description) {
+        if (description == null || description.trim().isEmpty()) {
+            throw new ValidationException("Product description cannot be null or empty");
+        }
+        if (description.length() > 1000) {
+            throw new ValidationException("Product description too long. Maximum length is 1000 characters");
+        }
+    }
+
+    private void validateSku(String sku) {
+        if (sku == null || sku.trim().isEmpty()) {
+            throw new ValidationException("Product SKU cannot be null or empty");
+        }
+        if (sku.length() > 50) {
+            throw new ValidationException("Product SKU too long. Maximum length is 50 characters");
+        }
+        if (!sku.matches("^[A-Z0-9-_]+$")) {
+            throw new ValidationException("Product SKU can only contain uppercase letters, numbers, hyphens, and underscores");
+        }
+    }
+
+    private void validateStockQuantity(int stockQuantity) {
+        if (stockQuantity < 0) {
+            throw new ValidationException("Stock quantity cannot be negative");
+        }
+    }
+
+    public Price getCurrentPrice() {
+        return this.price;
+    }
+
+    public String getBrand() {
+        return this.brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    // Getters
     public Long getId() { return id; }
     public String getName() { return name; }
-    public String getSlug() { return slug; }
     public String getDescription() { return description; }
-    public SKU getSku() { return sku; }
-    public Price getBasePrice() { return basePrice; }
-    public Price getSalePrice() { return salePrice; }
+    public String getSku() { return sku; }
+    public Price getPrice() { return price; }
+    public String getCategoryId() {
+        return this.categoryId != null ? this.categoryId.toString() : null;
+    }
+    public int getStockQuantity() { return stockQuantity; }
     public boolean isActive() { return isActive; }
-    public boolean isFeatured() { return isFeatured; }
+    public List<String> getImageUrls() { return imageUrls; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
-    public void setName(String name) {
-        validateName(name);
-        this.name = name;
-    }
-
-    public void setSlug(String slug) {
-        this.slug = slug;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setSku(SKU sku) {
-        this.sku = sku;
-    }
-
-    public void setFeatured(boolean featured) {
-        isFeatured = featured;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
-    }
-
-    // Package-private setters for repository use
+    // Package-private setters for persistence
     void setId(Long id) { this.id = id; }
-    void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

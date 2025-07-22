@@ -2,26 +2,29 @@ package com.ecommerce.core.domain.user.valueobject;
 
 import com.ecommerce.shared.exception.ValidationException;
 
+import java.util.regex.Pattern;
+
 public class Email {
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+        "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
+    );
+
     private final String value;
 
     public Email(String value) {
         validate(value);
-        this.value = value.toLowerCase();
+        this.value = value;
     }
 
-    private void validate(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new ValidationException("Email cannot be empty");
+    private void validate(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new ValidationException("Email cannot be null or empty");
         }
-
-        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-        if (!value.matches(emailRegex)) {
-            throw new ValidationException("Invalid email format");
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new ValidationException("Invalid email format: " + email);
         }
-
-        if (value.length() > 255) {
-            throw new ValidationException("Email cannot exceed 255 characters");
+        if (email.length() > 254) {
+            throw new ValidationException("Email too long. Maximum length is 254 characters");
         }
     }
 

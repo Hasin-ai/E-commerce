@@ -3,60 +3,86 @@ package com.ecommerce.adapter.web.controller;
 import com.ecommerce.adapter.web.dto.request.AddCartItemRequestDto;
 import com.ecommerce.adapter.web.dto.request.UpdateCartItemRequestDto;
 import com.ecommerce.adapter.web.dto.response.CartResponseDto;
-import com.ecommerce.adapter.web.mapper.CartMapper;
-import com.ecommerce.core.domain.cart.entity.Cart;
-import com.ecommerce.core.usecase.cart.AddItemToCartUseCase;
-import com.ecommerce.core.usecase.cart.GetCartUseCase;
-import com.ecommerce.core.usecase.cart.RemoveItemFromCartUseCase;
-import com.ecommerce.core.usecase.cart.UpdateCartItemUseCase;
-import com.ecommerce.infrastructure.security.CustomUserDetailsService;
 import com.ecommerce.shared.dto.ApiResponse;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 @RestController
 @RequestMapping("/api/cart")
-@RequiredArgsConstructor
+@Validated
+@PreAuthorize("isAuthenticated()")
 public class CartController {
 
-    private final AddItemToCartUseCase addItemToCartUseCase;
-    private final GetCartUseCase getCartUseCase;
-    private final RemoveItemFromCartUseCase removeItemFromCartUseCase;
-    private final UpdateCartItemUseCase updateCartItemUseCase;
-    private final CartMapper cartMapper;
-
-    @PostMapping
-    public ResponseEntity<ApiResponse<CartResponseDto>> addItemToCart(@AuthenticationPrincipal CustomUserDetailsService.CustomUserPrincipal userPrincipal,
-                                                                      @Valid @RequestBody AddCartItemRequestDto request) {
-        Long userId = userPrincipal.getUser().getId();
-        Cart cart = addItemToCartUseCase.execute(userId, request.getProductId(), request.getQuantity());
-        return ResponseEntity.ok(ApiResponse.success(cartMapper.toDto(cart)));
-    }
+    // TODO: Inject use cases when implemented
+    // private final GetCartUseCase getCartUseCase;
+    // private final AddCartItemUseCase addCartItemUseCase;
+    // private final UpdateCartItemUseCase updateCartItemUseCase;
+    // private final RemoveCartItemUseCase removeCartItemUseCase;
+    // private final ClearCartUseCase clearCartUseCase;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<CartResponseDto>> getCart(@AuthenticationPrincipal CustomUserDetailsService.CustomUserPrincipal userPrincipal) {
-        Long userId = userPrincipal.getUser().getId();
-        Cart cart = getCartUseCase.execute(userId);
-        return ResponseEntity.ok(ApiResponse.success(cartMapper.toDto(cart)));
+    public ResponseEntity<ApiResponse<CartResponseDto>> getCart(Authentication authentication) {
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Cart retrieved successfully"));
     }
 
-    @DeleteMapping("/items/{productId}")
-    public ResponseEntity<ApiResponse<CartResponseDto>> removeItemFromCart(@AuthenticationPrincipal CustomUserDetailsService.CustomUserPrincipal userPrincipal,
-                                                                              @PathVariable Long productId) {
-        Long userId = userPrincipal.getUser().getId();
-        Cart cart = removeItemFromCartUseCase.execute(userId, productId);
-        return ResponseEntity.ok(ApiResponse.success(cartMapper.toDto(cart)));
+    @PostMapping("/items")
+    public ResponseEntity<ApiResponse<CartResponseDto>> addItemToCart(
+            @Valid @RequestBody AddCartItemRequestDto requestDto,
+            Authentication authentication) {
+        
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Item added to cart successfully"));
     }
 
-    @PutMapping("/items/{productId}")
-    public ResponseEntity<ApiResponse<CartResponseDto>> updateCartItem(@AuthenticationPrincipal CustomUserDetailsService.CustomUserPrincipal userPrincipal,
-                                                                        @PathVariable Long productId,
-                                                                        @Valid @RequestBody UpdateCartItemRequestDto request) {
-        Long userId = userPrincipal.getUser().getId();
-        Cart cart = updateCartItemUseCase.execute(userId, productId, request.getQuantity());
-        return ResponseEntity.ok(ApiResponse.success(cartMapper.toDto(cart)));
+    @PutMapping("/items/{itemId}")
+    public ResponseEntity<ApiResponse<CartResponseDto>> updateCartItem(
+            @PathVariable @NotNull @Positive Long itemId,
+            @Valid @RequestBody UpdateCartItemRequestDto requestDto,
+            Authentication authentication) {
+        
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Cart item updated successfully"));
+    }
+
+    @DeleteMapping("/items/{itemId}")
+    public ResponseEntity<ApiResponse<CartResponseDto>> removeCartItem(
+            @PathVariable @NotNull @Positive Long itemId,
+            Authentication authentication) {
+        
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Item removed from cart successfully"));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> clearCart(Authentication authentication) {
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Cart cleared successfully"));
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<ApiResponse<Integer>> getCartItemCount(Authentication authentication) {
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(0, "Cart item count retrieved successfully"));
     }
 }

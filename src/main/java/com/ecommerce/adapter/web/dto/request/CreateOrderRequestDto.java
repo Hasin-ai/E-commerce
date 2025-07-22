@@ -4,13 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
-@Getter
-@Setter
 public class CreateOrderRequestDto {
 
     @NotNull(message = "User ID is required")
@@ -20,8 +16,13 @@ public class CreateOrderRequestDto {
     @NotEmpty(message = "Order must have at least one item")
     private List<OrderItemDto> items;
 
-    @Getter
-    @Setter
+    // Getters and Setters
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public List<OrderItemDto> getItems() { return items; }
+    public void setItems(List<OrderItemDto> items) { this.items = items; }
+
     public static class OrderItemDto {
 
         @NotNull(message = "Product ID is required")
@@ -31,5 +32,12 @@ public class CreateOrderRequestDto {
         @NotNull(message = "Quantity is required")
         @Positive(message = "Quantity must be positive")
         private Integer quantity;
+
+        // Getters and Setters
+        public Long getProductId() { return productId; }
+        public void setProductId(Long productId) { this.productId = productId; }
+
+        public Integer getQuantity() { return quantity; }
+        public void setQuantity(Integer quantity) { this.quantity = quantity; }
     }
 }

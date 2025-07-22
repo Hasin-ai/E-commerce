@@ -1,9 +1,9 @@
 package com.ecommerce.core.usecase.notification;
 
-import com.ecommerce.core.domain.notification.Notification;
+import com.ecommerce.core.domain.notification.entity.Notification;
 import com.ecommerce.core.domain.notification.repository.NotificationRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,12 +13,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 @Transactional(readOnly = true)
 public class GetUserNotificationsUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(GetUserNotificationsUseCase.class);
     private final NotificationRepository notificationRepository;
+
+    public GetUserNotificationsUseCase(NotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
+    }
 
     public List<Notification> execute(Long userId) {
         log.debug("Getting all notifications for user: {}", userId);
@@ -56,7 +59,7 @@ public class GetUserNotificationsUseCase {
             // Update notification fields directly using setters
             notification.setRead(true);
             notification.setReadAt(LocalDateTime.now());
-            notification.setStatus(Notification.NotificationStatus.READ);
+            notification.markAsRead();
             notificationRepository.save(notification);
         }
     }

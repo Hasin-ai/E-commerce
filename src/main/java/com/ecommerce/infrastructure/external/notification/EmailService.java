@@ -1,6 +1,7 @@
 package com.ecommerce.infrastructure.external.notification;
 
 import com.ecommerce.core.usecase.notification.NotificationService;
+import com.ecommerce.core.usecase.notification.EmailNotificationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,14 +30,14 @@ public class EmailService {
     @Value("${app.email.enabled:true}")
     private boolean emailEnabled;
 
-    public void sendEmail(NotificationService.EmailNotificationRequest request) {
+    public void sendEmail(EmailNotificationRequest request) {
         if (!emailEnabled) {
             log.info("Email sending is disabled. Skipping email to: {}", request.getTo());
             return;
         }
 
         try {
-            if (request.getTemplateName() != null && !request.getTemplateName().isEmpty()) {
+            if (request.getTemplateId() != null && !request.getTemplateId().isEmpty()) {
                 sendTemplatedEmail(request);
             } else {
                 sendSimpleEmail(request);
@@ -47,7 +48,7 @@ public class EmailService {
         }
     }
 
-    private void sendSimpleEmail(NotificationService.EmailNotificationRequest request) {
+    private void sendSimpleEmail(EmailNotificationRequest request) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(request.getTo());
@@ -58,7 +59,7 @@ public class EmailService {
         log.info("Simple email sent successfully to: {}", request.getTo());
     }
 
-    private void sendTemplatedEmail(NotificationService.EmailNotificationRequest request) throws MessagingException {
+    private void sendTemplatedEmail(EmailNotificationRequest request) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
@@ -69,26 +70,26 @@ public class EmailService {
         // Process template with variables
         Context context = new Context();
         if (request.getTemplateVariables() != null) {
-            for (Map.Entry<String, String> entry : request.getTemplateVariables().entrySet()) {
+            for (Map.Entry<String, Object> entry : request.getTemplateVariables().entrySet()) {
                 context.setVariable(entry.getKey(), entry.getValue());
             }
         }
         context.setVariable("message", request.getMessage());
         context.setVariable("subject", request.getSubject());
 
-        String htmlContent = templateEngine.process(request.getTemplateName(), context);
+        String htmlContent = templateEngine.process(request.getTemplateId(), context);
         helper.setText(htmlContent, true);
 
         mailSender.send(mimeMessage);
         log.info("Templated email sent successfully to: {} using template: {}",
-                request.getTo(), request.getTemplateName());
+                request.getTo(), request.getTemplateId());
     }
 
     public void sendOrderConfirmationEmail(String to, String orderNumber, String customerName) {
-        NotificationService.EmailNotificationRequest request = NotificationService.EmailNotificationRequest.builder()
+        EmailNotificationRequest request = EmailNotificationRequest.builder()
                 .to(to)
                 .subject("Order Confirmation - #" + orderNumber)
-                .templateName("order-confirmation")
+                .templateId("order-confirmation")
                 .templateVariables(Map.of(
                         "customerName", customerName,
                         "orderNumber", orderNumber
@@ -99,10 +100,10 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(String to, String resetToken, String customerName) {
-        NotificationService.EmailNotificationRequest request = NotificationService.EmailNotificationRequest.builder()
+        EmailNotificationRequest request = EmailNotificationRequest.builder()
                 .to(to)
                 .subject("Password Reset Request")
-                .templateName("password-reset")
+                .templateId("password-reset")
                 .templateVariables(Map.of(
                         "customerName", customerName,
                         "resetToken", resetToken,
@@ -114,10 +115,10 @@ public class EmailService {
     }
 
     public void sendWelcomeEmail(String to, String customerName) {
-        NotificationService.EmailNotificationRequest request = NotificationService.EmailNotificationRequest.builder()
+        EmailNotificationRequest request = EmailNotificationRequest.builder()
                 .to(to)
                 .subject("Welcome to Our E-commerce Platform!")
-                .templateName("welcome")
+                .templateId("welcome")
                 .templateVariables(Map.of("customerName", customerName))
                 .build();
 

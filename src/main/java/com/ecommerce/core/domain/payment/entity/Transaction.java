@@ -49,56 +49,55 @@ public class Transaction {
     @Column(nullable = false)
     private TransactionStatus status;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public enum TransactionStatus {
-        PENDING, SUCCESSFUL, FAILED, CANCELLED, REFUNDED
-    }
-
-    public Transaction(Long paymentId, BigDecimal amount, String currency, String paymentMethod, String gateway) {
-        this.paymentId = paymentId;
-        this.amount = amount;
-        this.currency = currency;
-        this.paymentMethod = paymentMethod;
-        this.gateway = gateway;
-        this.status = TransactionStatus.PENDING;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void markAsSuccessful(String externalTransactionId, String gatewayResponse, String errorMessage, String additionalInfo) {
-        this.status = TransactionStatus.SUCCESSFUL;
-        this.externalTransactionId = externalTransactionId;
-        this.gatewayResponse = gatewayResponse;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void markAsFailed(String gatewayResponse, String errorMessage) {
-        this.status = TransactionStatus.FAILED;
-        this.gatewayResponse = gatewayResponse;
-        this.errorMessage = errorMessage;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void markAsRefunded(String externalTransactionId, String gatewayResponse) {
-        this.status = TransactionStatus.REFUNDED;
-        this.externalTransactionId = externalTransactionId;
-        this.gatewayResponse = gatewayResponse;
-        this.updatedAt = LocalDateTime.now();
-    }
-
     @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (status == null) {
+            status = TransactionStatus.PENDING;
+        }
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    public void preUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public String getTransactionId() {
+        return externalTransactionId;
+    }
+
+    public enum TransactionStatus {
+        PENDING,
+        PROCESSING,
+        COMPLETED,
+        FAILED,
+        CANCELLED,
+        REFUNDED
+    }
+
+    // Additional constructor for ProcessPaymentUseCase
+    public Transaction(Long paymentId, String transactionId, Object amount, String status, String gatewayResponse) {
+        this.paymentId = paymentId;
+        this.externalTransactionId = transactionId;
+        if (amount instanceof com.ecommerce.core.domain.product.valueobject.Price) {
+            com.ecommerce.core.domain.product.valueobject.Price price = (com.ecommerce.core.domain.product.valueobject.Price) amount;
+            this.amount = price.getAmount();
+            this.currency = price.getCurrency();
+        } else if (amount instanceof BigDecimal) {
+            this.amount = (BigDecimal) amount;
+            this.currency = "USD"; // default currency
+        }
+        this.status = TransactionStatus.valueOf(status.toUpperCase());
+        this.gatewayResponse = gatewayResponse;
+        this.gateway = "stripe";
+        this.createdAt = LocalDateTime.now();
     }
 }

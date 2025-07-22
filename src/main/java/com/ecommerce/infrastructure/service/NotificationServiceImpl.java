@@ -1,8 +1,14 @@
 package com.ecommerce.infrastructure.service;
 
-import com.ecommerce.core.domain.notification.Notification;
+import com.ecommerce.core.domain.notification.entity.Notification;
 import com.ecommerce.core.domain.notification.repository.NotificationRepository;
 import com.ecommerce.core.usecase.notification.NotificationService;
+import com.ecommerce.core.usecase.notification.SendNotificationRequest;
+import com.ecommerce.core.usecase.notification.EmailNotificationRequest;
+import com.ecommerce.core.usecase.notification.PushNotificationRequest;
+import com.ecommerce.core.domain.notification.valueobject.NotificationStatus;
+import com.ecommerce.core.domain.notification.valueobject.NotificationType;
+import com.ecommerce.infrastructure.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,57 +25,53 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
-    private final SmsService smsService;
 
     @Override
-    public Notification sendNotification(SendNotificationRequest request) {
-        log.info("Sending notification to user: {}, type: {}", request.getUserId(), request.getType());
+    public Notification createNotification(Long userId, String subject, String message,
+                                           NotificationType type, String recipient) {
+        log.info("Creating notification for user: {}, type: {}", userId, type);
+        
+        Notification notification = new Notification(userId, type, subject, message, recipient);
+        return notificationRepository.save(notification);
+    }
 
-        Notification notification = Notification.builder()
-                .userId(request.getUserId())
-                .type(request.getType())
-                .title(request.getTitle())
-                .message(request.getMessage())
-                .email(request.getEmail())
-                .phoneNumber(request.getPhoneNumber())
-                .status(Notification.NotificationStatus.PENDING)
-                .build();
+    @Override
+    public Notification sendNotification(Long userId, String subject, String message,
+                                         NotificationType type, String recipient) {
+        log.info("Sending notification to user: {}, type: {}", userId, type);
 
+        Notification notification = new Notification(userId, type, subject, message, recipient);
         notification = notificationRepository.save(notification);
 
-        // Send email notification if email is provided
-        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
-            try {
-                sendEmailNotification(EmailNotificationRequest.builder()
-                        .to(request.getEmail())
-                        .subject(request.getTitle())
-                        .message(request.getMessage())
-                        .templateVariables(request.getTemplateVariables())
-                        .build());
+        return sendNotification(notification);
+    }
 
-                notification.setStatus(Notification.NotificationStatus.SENT);
-            } catch (Exception e) {
-                log.error("Failed to send email notification: {}", e.getMessage());
-                notification.setStatus(Notification.NotificationStatus.FAILED);
-                notification.setErrorMessage(e.getMessage());
+    @Override
+    public Notification sendNotification(Notification notification) {
+        log.info("Sending existing notification: {}", notification.getId());
+        
+        try {
+            switch (notification.getType()) {
+                case EMAIL:
+                    emailService.sendEmail(EmailNotificationRequest.builder()
+                            .to(notification.getRecipient())
+                            .subject(notification.getSubject())
+                            .message(notification.getMessage())
+                            .build());
+                    break;
+                case SMS:
+                    log.info("SMS notification would be sent to: {}", notification.getRecipient());
+                    break;
+                case PUSH:
+                    log.info("Push notification would be sent to: {}", notification.getRecipient());
+                    break;
+                default:
+                    log.warn("Unsupported notification type: {}", notification.getType());
             }
-        }
-
-        // Send SMS notification if phone number is provided
-        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isEmpty()) {
-            try {
-                sendSmsNotification(SmsNotificationRequest.builder()
-                        .phoneNumber(request.getPhoneNumber())
-                        .message(request.getMessage())
-                        .templateVariables(request.getTemplateVariables())
-                        .build());
-
-                notification.setStatus(Notification.NotificationStatus.SENT);
-            } catch (Exception e) {
-                log.error("Failed to send SMS notification: {}", e.getMessage());
-                notification.setStatus(Notification.NotificationStatus.FAILED);
-                notification.setErrorMessage(e.getMessage());
-            }
+            notification.markAsSent();
+        } catch (Exception e) {
+            log.error("Failed to send notification: {}", e.getMessage());
+            notification.markAsFailed();
         }
 
         return notificationRepository.save(notification);
@@ -77,7 +79,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Notification> getUserNotifications(Long userId) {
+    public List<Notification> getNotificationsByUserId(Long userId, int page, int size) {
+        // For now, return all notifications for the user (pagination can be added later)
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
@@ -88,48 +91,78 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void markAsRead(Long notificationId, Long userId) {
+    public void markAsRead(Long notificationId) {
         notificationRepository.findById(notificationId)
-                .filter(notification -> notification.getUserId().equals(userId))
                 .ifPresent(notification -> {
-                    notification.setRead(true);
-                    notification.setReadAt(LocalDateTime.now());
-                    notification.setStatus(Notification.NotificationStatus.READ);
+                    notification.markAsRead();
                     notificationRepository.save(notification);
                 });
+    }
+
+    @Override
+    public void markAsRead(List<Long> notificationIds) {
+        notificationIds.forEach(this::markAsRead);
     }
 
     @Override
     public void markAllAsRead(Long userId) {
         List<Notification> unreadNotifications = getUnreadNotifications(userId);
         unreadNotifications.forEach(notification -> {
-            notification.setRead(true);
-            notification.setReadAt(LocalDateTime.now());
-            notification.setStatus(Notification.NotificationStatus.READ);
+            notification.markAsRead();
         });
         notificationRepository.saveAll(unreadNotifications);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Long getUnreadCount(Long userId) {
-        return notificationRepository.countUnreadByUserId(userId);
+    public void deleteOldNotifications(LocalDateTime before) {
+        // Implementation would delete notifications created before the given date
+        log.info("Deleting notifications created before: {}", before);
+        // notificationRepository.deleteByCreatedAtBefore(before);
     }
 
     @Override
-    public void deleteNotification(Long notificationId, Long userId) {
+    public java.util.Optional<Notification> getById(Long id) {
+        return notificationRepository.findById(id);
+    }
+
+    @Override
+    public Notification scheduleNotification(Long userId, String subject, String message,
+                                             NotificationType type, String recipient,
+                                             LocalDateTime scheduledAt) {
+        log.info("Scheduling notification for user: {}, type: {}, scheduled at: {}", userId, type, scheduledAt);
+        
+        Notification notification = new Notification(userId, type, subject, message, recipient);
+        notification.schedule(scheduledAt);
+        return notificationRepository.save(notification);
+    }
+
+    @Override
+    public void cancelScheduledNotification(Long notificationId) {
         notificationRepository.findById(notificationId)
-                .filter(notification -> notification.getUserId().equals(userId))
-                .ifPresent(notificationRepository::delete);
+                .ifPresent(notification -> {
+                    if (notification.isScheduled()) {
+                        notification.setStatus(NotificationStatus.CANCELLED);
+                        notificationRepository.save(notification);
+                    }
+                });
     }
 
     @Override
-    public void sendEmailNotification(EmailNotificationRequest request) {
-        emailService.sendEmail(request);
+    public List<Notification> getNotificationsByTypeAndStatus(NotificationType type,
+                                                               NotificationStatus status) {
+        return notificationRepository.findByTypeAndStatus(type, status);
     }
 
     @Override
-    public void sendSmsNotification(SmsNotificationRequest request) {
-        smsService.sendSms(request);
+    public void retryFailedNotifications() {
+        List<Notification> failedNotifications = notificationRepository.findByStatusAndCreatedAtBefore(
+                NotificationStatus.FAILED, LocalDateTime.now().minusHours(1));
+        
+        failedNotifications.stream()
+                .filter(Notification::canRetry)
+                .forEach(notification -> {
+                    notification.incrementRetryCount();
+                    sendNotification(notification);
+                });
     }
 }

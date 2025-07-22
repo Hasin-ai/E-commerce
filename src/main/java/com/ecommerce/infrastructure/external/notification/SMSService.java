@@ -84,8 +84,8 @@ public class SMSService {
         String message = request.getMessage();
 
         if (request.getTemplateVariables() != null) {
-            for (Map.Entry<String, String> entry : request.getTemplateVariables().entrySet()) {
-                message = message.replace("{{" + entry.getKey() + "}}", entry.getValue());
+            for (Map.Entry<String, Object> entry : request.getTemplateVariables().entrySet()) {
+                message = message.replace("{{" + entry.getKey() + "}}", String.valueOf(entry.getValue()));
             }
         }
 

@@ -31,7 +31,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(new Email(email))
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        return new CustomUserPrincipal(user);
+        return new CustomUserDetails(
+            user.getId(),
+            user.getEmail().getValue(),
+            user.getPassword().getValue(),
+            java.util.Collections.emptyList()
+        );
     }
 
     public static class CustomUserPrincipal implements UserDetails {

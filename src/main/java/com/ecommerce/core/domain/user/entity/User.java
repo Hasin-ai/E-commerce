@@ -2,111 +2,254 @@ package com.ecommerce.core.domain.user.entity;
 
 import com.ecommerce.core.domain.user.valueobject.Email;
 import com.ecommerce.core.domain.user.valueobject.Password;
-import com.ecommerce.shared.exception.BusinessException;
+import com.ecommerce.core.domain.user.valueobject.UserRole;
+import com.ecommerce.core.domain.user.valueobject.UserStatus;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class User {
     private Long id;
-    private String firstName;
-    private String lastName;
     private Email email;
     private Password password;
+    private String firstName;
+    private String lastName;
     private String phone;
-    private boolean isActive;
-    private boolean isEmailVerified;
+    private UserRole role;
+    private UserStatus status;
+    private boolean emailVerified;
+    private String verificationToken;
+    private String resetPasswordToken;
+    private LocalDateTime resetPasswordTokenExpiry;
+    private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<UserAddress> addresses;
+    private UserProfile profile;
 
-    // Constructor
-    public User(String firstName, String lastName, Email email, Password password, String phone) {
-        validateName(firstName, "First name");
-        validateName(lastName, "Last name");
-        validatePhone(phone);
-
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
-        this.phone = phone;
-        this.isActive = true;
-        this.isEmailVerified = false;
+    // Default constructor
+    public User() {
+        this.status = UserStatus.PENDING_VERIFICATION;
+        this.role = UserRole.CUSTOMER;
+        this.emailVerified = false;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Business methods
-    public void updateProfile(String firstName, String lastName, String phone) {
-        validateName(firstName, "First name");
-        validateName(lastName, "Last name");
-        validatePhone(phone);
+    // Constructor with required fields
+    public User(String email, String password) {
+        this();
+        this.email = new Email(email);
+        this.password = new Password(password);
+    }
 
+    // Constructor with all basic fields
+    public User(String email, String password, String firstName, String lastName, String phone) {
+        this(email, password);
         this.firstName = firstName;
         this.lastName = lastName;
+        this.phone = phone;
+    }
+
+    // Business methods
+    public void verifyEmail() {
+        this.emailVerified = true;
+        this.status = UserStatus.ACTIVE;
+        this.verificationToken = null;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void activateAccount() {
+        this.status = UserStatus.ACTIVE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void suspendAccount() {
+        this.status = UserStatus.SUSPENDED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void deactivateAccount() {
+        this.status = UserStatus.INACTIVE;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateLastLogin() {
+        this.lastLoginAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setResetPasswordToken(String token, LocalDateTime expiry) {
+        this.resetPasswordToken = token;
+        this.resetPasswordTokenExpiry = expiry;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void clearResetPasswordToken() {
+        this.resetPasswordToken = null;
+        this.resetPasswordTokenExpiry = null;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isResetTokenValid() {
+        return resetPasswordToken != null &&
+               resetPasswordTokenExpiry != null &&
+               resetPasswordTokenExpiry.isAfter(LocalDateTime.now());
+    }
+
+    public boolean isActive() {
+        return status == UserStatus.ACTIVE;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Email getEmail() {
+        return email;
+    }
+
+    public void setEmail(Email email) {
+        this.email = email;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setEmail(String email) {
+        this.email = new Email(email);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public Password getPassword() {
+        return password;
+    }
+
+    public void setPassword(Password password) {
+        this.password = password;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setPassword(String password) {
+        this.password = new Password(password);
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
         this.phone = phone;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void changePassword(Password newPassword) {
-        this.password = newPassword;
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void activate() {
-        this.isActive = true;
+    public UserStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void deactivate() {
-        this.isActive = false;
+    public boolean getEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void verifyEmail() {
-        this.isEmailVerified = true;
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(String verificationToken) {
+        this.verificationToken = verificationToken;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public String getFullName() {
-        return firstName + " " + lastName;
+    public String getResetPasswordToken() {
+        return resetPasswordToken;
     }
 
-    public boolean isAvailable() {
-        return isActive;
+    public LocalDateTime getResetPasswordTokenExpiry() {
+        return resetPasswordTokenExpiry;
     }
 
-    // Private validation methods
-    private void validateName(String name, String fieldName) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new BusinessException(fieldName + " cannot be empty");
-        }
-        if (name.length() > 50) {
-            throw new BusinessException(fieldName + " cannot exceed 50 characters");
-        }
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
     }
 
-    private void validatePhone(String phone) {
-        if (phone != null && !phone.matches("^\\+?[1-9]\\d{1,14}$")) {
-            throw new BusinessException("Invalid phone number format");
-        }
+    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
     }
 
-    // Getters
-    public Long getId() { return id; }
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public Email getEmail() { return email; }
-    public Password getPassword() { return password; }
-    public String getPhone() { return phone; }
-    public boolean isActive() { return isActive; }
-    public boolean isEmailVerified() { return isEmailVerified; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
-    // Package-private setters for repository use
-    void setId(Long id) { this.id = id; }
-    void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    void setActive(boolean active) { this.isActive = active; }
-    void setEmailVerified(boolean emailVerified) { this.isEmailVerified = emailVerified; }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public List<UserAddress> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<UserAddress> addresses) {
+        this.addresses = addresses;
+    }
+
+    public UserProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(UserProfile profile) {
+        this.profile = profile;
+    }
 }

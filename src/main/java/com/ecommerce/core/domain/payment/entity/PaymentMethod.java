@@ -28,6 +28,8 @@ public class PaymentMethod {
     private String billingCountry;
     private boolean isDefault;
     private String stripePaymentMethodId;
+    private String gateway;
+    private String gatewayMethodId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -59,9 +61,10 @@ public class PaymentMethod {
         this.brand = brand;
         this.holderName = holderName;
         this.stripePaymentMethodId = stripePaymentMethodId;
-        this.isDefault = false;
+        this.gateway = "stripe";
+        this.gatewayMethodId = stripePaymentMethodId;
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.isDefault = false;
     }
 
     /**

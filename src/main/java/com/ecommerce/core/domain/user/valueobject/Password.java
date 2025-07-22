@@ -2,7 +2,13 @@ package com.ecommerce.core.domain.user.valueobject;
 
 import com.ecommerce.shared.exception.ValidationException;
 
+import java.util.regex.Pattern;
+
 public class Password {
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile(
+        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+    );
+
     private final String value;
 
     public Password(String value) {
@@ -10,39 +16,28 @@ public class Password {
         this.value = value;
     }
 
-    private void validate(String value) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new ValidationException("Password cannot be empty");
+    private void validate(String password) {
+        if (password == null || password.trim().isEmpty()) {
+            throw new ValidationException("Password cannot be null or empty");
         }
-
-        if (value.length() < 8) {
+        if (password.length() < 8) {
             throw new ValidationException("Password must be at least 8 characters long");
         }
-
-        if (value.length() > 128) {
-            throw new ValidationException("Password cannot exceed 128 characters");
+        if (password.length() > 128) {
+            throw new ValidationException("Password too long. Maximum length is 128 characters");
         }
-
-        // Check for at least one digit, one lowercase, one uppercase, and one special character
-        if (!value.matches(".*\\d.*")) {
-            throw new ValidationException("Password must contain at least one digit");
-        }
-
-        if (!value.matches(".*[a-z].*")) {
-            throw new ValidationException("Password must contain at least one lowercase letter");
-        }
-
-        if (!value.matches(".*[A-Z].*")) {
-            throw new ValidationException("Password must contain at least one uppercase letter");
-        }
-
-        if (!value.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?].*")) {
-            throw new ValidationException("Password must contain at least one special character");
+        if (!PASSWORD_PATTERN.matcher(password).matches()) {
+            throw new ValidationException("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character");
         }
     }
 
     public String getValue() {
         return value;
+    }
+
+    public boolean matches(String plainPassword) {
+        // This is a simple comparison - in a real application, you'd use BCrypt or similar
+        return value.equals(plainPassword);
     }
 
     @Override
@@ -60,6 +55,6 @@ public class Password {
 
     @Override
     public String toString() {
-        return "********"; // Never expose the actual password
+        return "********"; // Never expose password value
     }
 }

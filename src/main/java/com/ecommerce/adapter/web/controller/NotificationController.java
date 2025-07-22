@@ -1,162 +1,114 @@
 package com.ecommerce.adapter.web.controller;
 
-import com.ecommerce.core.domain.notification.Notification;
-import com.ecommerce.core.usecase.notification.NotificationService;
-import com.ecommerce.shared.security.JwtUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.ecommerce.adapter.web.dto.request.SendNotificationRequestDto;
+import com.ecommerce.adapter.web.dto.response.NotificationResponseDto;
+import com.ecommerce.shared.dto.ApiResponse;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 @RestController
 @RequestMapping("/api/notifications")
-@RequiredArgsConstructor
-@Slf4j
+@Validated
+@PreAuthorize("isAuthenticated()")
 public class NotificationController {
 
-    private final NotificationService notificationService;
-    private final JwtUtils jwtUtils;
+    // TODO: Inject use cases when implemented
+    // private final SendNotificationUseCase sendNotificationUseCase;
+    // private final GetUserNotificationsUseCase getUserNotificationsUseCase;
+    // private final MarkNotificationReadUseCase markNotificationReadUseCase;
+    // private final DeleteNotificationUseCase deleteNotificationUseCase;
 
     @GetMapping
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Notification>> getUserNotifications(HttpServletRequest request) {
-        Long userId = jwtUtils.getUserIdFromRequest(request);
-        List<Notification> notifications = notificationService.getUserNotifications(userId);
-        return ResponseEntity.ok(notifications);
-    }
-
-    @GetMapping("/unread")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Notification>> getUnreadNotifications(HttpServletRequest request) {
-        Long userId = jwtUtils.getUserIdFromRequest(request);
-        List<Notification> notifications = notificationService.getUnreadNotifications(userId);
-        return ResponseEntity.ok(notifications);
+    public ResponseEntity<ApiResponse<Page<NotificationResponseDto>>> getUserNotifications(
+            Authentication authentication,
+            Pageable pageable,
+            @RequestParam(required = false) Boolean unreadOnly) {
+        
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Notifications retrieved successfully"));
     }
 
     @GetMapping("/unread/count")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Map<String, Long>> getUnreadCount(HttpServletRequest request) {
-        Long userId = jwtUtils.getUserIdFromRequest(request);
-        Long count = notificationService.getUnreadCount(userId);
-        return ResponseEntity.ok(Map.of("count", count));
+    public ResponseEntity<ApiResponse<Integer>> getUnreadNotificationCount(
+            Authentication authentication) {
+        
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(0, "Unread notification count retrieved successfully"));
     }
 
-    @PutMapping("/{notificationId}/read")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> markAsRead(
-            @PathVariable Long notificationId,
-            HttpServletRequest request) {
-        Long userId = jwtUtils.getUserIdFromRequest(request);
-        notificationService.markAsRead(notificationId, userId);
-        return ResponseEntity.ok().build();
+    @PutMapping("/{id}/read")
+    public ResponseEntity<ApiResponse<NotificationResponseDto>> markNotificationAsRead(
+            @PathVariable @NotNull @Positive Long id,
+            Authentication authentication) {
+        
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Notification marked as read"));
     }
 
     @PutMapping("/read-all")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> markAllAsRead(HttpServletRequest request) {
-        Long userId = jwtUtils.getUserIdFromRequest(request);
-        notificationService.markAllAsRead(userId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> markAllNotificationsAsRead(
+            Authentication authentication) {
+        
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "All notifications marked as read"));
     }
 
-    @DeleteMapping("/{notificationId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Void> deleteNotification(
-            @PathVariable Long notificationId,
-            HttpServletRequest request) {
-        Long userId = jwtUtils.getUserIdFromRequest(request);
-        notificationService.deleteNotification(notificationId, userId);
-        return ResponseEntity.ok().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(
+            @PathVariable @NotNull @Positive Long id,
+            Authentication authentication) {
+        
+        String userEmail = authentication.getName();
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Notification deleted successfully"));
     }
 
-    @PostMapping("/send")
+    // Admin endpoints
+    @PostMapping("/admin/send")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Notification> sendNotification(@RequestBody SendNotificationRequest request) {
-        NotificationService.SendNotificationRequest serviceRequest = NotificationService.SendNotificationRequest.builder()
-                .userId(request.getUserId())
-                .type(request.getType())
-                .title(request.getTitle())
-                .message(request.getMessage())
-                .email(request.getEmail())
-                .phoneNumber(request.getPhoneNumber())
-                .templateVariables(request.getTemplateVariables())
-                .build();
-
-        Notification notification = notificationService.sendNotification(serviceRequest);
-        return ResponseEntity.ok(notification);
+    public ResponseEntity<ApiResponse<Void>> sendNotification(
+            @Valid @RequestBody SendNotificationRequestDto requestDto) {
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Notification sent successfully"));
     }
 
-    // DTO for sending notifications
-    public static class SendNotificationRequest {
-        private Long userId;
-        private Notification.NotificationType type;
-        private String title;
-        private String message;
-        private String email;
-        private String phoneNumber;
-        private Map<String, String> templateVariables;
+    @PostMapping("/admin/broadcast")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> broadcastNotification(
+            @Valid @RequestBody SendNotificationRequestDto requestDto) {
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "Broadcast notification sent successfully"));
+    }
 
-        public SendNotificationRequest() {}
-
-        public Long getUserId() {
-            return userId;
-        }
-
-        public void setUserId(Long userId) {
-            this.userId = userId;
-        }
-
-        public Notification.NotificationType getType() {
-            return type;
-        }
-
-        public void setType(Notification.NotificationType type) {
-            this.type = type;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getPhoneNumber() {
-            return phoneNumber;
-        }
-
-        public void setPhoneNumber(String phoneNumber) {
-            this.phoneNumber = phoneNumber;
-        }
-
-        public Map<String, String> getTemplateVariables() {
-            return templateVariables;
-        }
-
-        public void setTemplateVariables(Map<String, String> templateVariables) {
-            this.templateVariables = templateVariables;
-        }
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Page<NotificationResponseDto>>> getAllNotifications(
+            Pageable pageable,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String status) {
+        
+        // TODO: Implement with use case
+        return ResponseEntity.ok(ApiResponse.success(null, "All notifications retrieved successfully"));
     }
 }

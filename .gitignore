@@ -31,3 +31,18 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Logs ###
+*.log
+logs/
+temp_disabled/
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Backup files ###
+*.bak
+*.tmp
+*.orig
+*~

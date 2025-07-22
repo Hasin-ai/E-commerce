@@ -1,114 +1,104 @@
 package com.ecommerce.core.domain.payment.entity;
 
+import com.ecommerce.core.domain.payment.valueobject.PaymentMethod;
 import com.ecommerce.core.domain.payment.valueobject.PaymentStatus;
-import com.ecommerce.core.domain.product.valueobject.Price;
-import com.ecommerce.shared.exception.BusinessException;
-import lombok.Getter;
-import lombok.Setter;
+import com.ecommerce.shared.exception.ValidationException;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * Represents a payment in the system.
- * This is the core domain entity for the payment module.
- */
-@Getter
-@Setter
 public class Payment {
     private Long id;
+    private String paymentId;
     private Long orderId;
-    private String paymentIntentId;
-    private Price amount;
-    private PaymentStatus status;
-    private String paymentMethod;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private Long userId;
+    private BigDecimal amount;
     private String currency;
-    private String description;
-    private String customerEmail;
-    private String errorMessage;
+    private PaymentMethod method;
+    private PaymentStatus status;
+    private String transactionId;
+    private String gatewayResponse;
+    private LocalDateTime createdAt;
+    private LocalDateTime processedAt;
 
-    /**
-     * Creates a new payment for an order.
-     *
-     * @param orderId The ID of the order associated with this payment
-     * @param amount The amount to be paid
-     * @param currency The currency of the payment
-     * @param customerEmail The email of the customer making the payment
-     */
-    public Payment(Long orderId, Price amount, String currency, String customerEmail) {
-        if (orderId == null) {
-            throw new BusinessException("Order ID cannot be null");
-        }
-        if (amount == null || amount.getAmount().compareTo(java.math.BigDecimal.ZERO) <= 0) {
-            throw new BusinessException("Payment amount must be greater than zero");
-        }
-        if (currency == null || currency.isEmpty()) {
-            throw new BusinessException("Currency cannot be null or empty");
-        }
+    public Payment(String paymentId, Long orderId, Long userId, BigDecimal amount,
+                   String currency, PaymentMethod method) {
+        validatePaymentId(paymentId);
+        validateAmount(amount);
+        validateCurrency(currency);
 
+        this.paymentId = paymentId;
         this.orderId = orderId;
+        this.userId = userId;
         this.amount = amount;
-        this.currency = currency;
-        this.customerEmail = customerEmail;
+        this.currency = currency.toUpperCase();
+        this.method = method;
         this.status = PaymentStatus.PENDING;
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * Updates the payment status and sets the payment intent ID.
-     *
-     * @param paymentIntentId The payment intent ID from the payment gateway
-     * @param status The new status of the payment
-     */
-    public void updatePaymentIntent(String paymentIntentId, PaymentStatus status) {
-        this.paymentIntentId = paymentIntentId;
-        this.status = status;
-        this.updatedAt = LocalDateTime.now();
+    public void markAsProcessing() {
+        if (this.status != PaymentStatus.PENDING) {
+            throw new ValidationException("Can only process pending payments");
+        }
+        this.status = PaymentStatus.PROCESSING;
     }
 
-    /**
-     * Marks the payment as completed.
-     */
-    public void markAsCompleted() {
+    public void markAsCompleted(String transactionId, String gatewayResponse) {
         if (this.status != PaymentStatus.PROCESSING) {
-            throw new BusinessException("Only processing payments can be marked as completed");
+            throw new ValidationException("Can only complete processing payments");
         }
         this.status = PaymentStatus.COMPLETED;
-        this.updatedAt = LocalDateTime.now();
+        this.transactionId = transactionId;
+        this.gatewayResponse = gatewayResponse;
+        this.processedAt = LocalDateTime.now();
     }
 
-    /**
-     * Marks the payment as failed with an error message.
-     *
-     * @param errorMessage The error message describing why the payment failed
-     */
-    public void markAsFailed(String errorMessage) {
+    public void markAsFailed(String gatewayResponse) {
         this.status = PaymentStatus.FAILED;
-        this.errorMessage = errorMessage;
-        this.updatedAt = LocalDateTime.now();
+        this.gatewayResponse = gatewayResponse;
+        this.processedAt = LocalDateTime.now();
     }
 
-    /**
-     * Marks the payment as refunded.
-     */
-    public void refund() {
+    public void markAsRefunded() {
         if (this.status != PaymentStatus.COMPLETED) {
-            throw new BusinessException("Only completed payments can be refunded");
+            throw new ValidationException("Can only refund completed payments");
         }
         this.status = PaymentStatus.REFUNDED;
-        this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * Cancels the payment.
-     */
-    public void cancel() {
-        if (this.status == PaymentStatus.COMPLETED || this.status == PaymentStatus.REFUNDED) {
-            throw new BusinessException("Cannot cancel a completed or refunded payment");
+    private void validatePaymentId(String paymentId) {
+        if (paymentId == null || paymentId.trim().isEmpty()) {
+            throw new ValidationException("Payment ID cannot be empty");
         }
-        this.status = PaymentStatus.CANCELLED;
-        this.updatedAt = LocalDateTime.now();
     }
+
+    private void validateAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidationException("Payment amount must be positive");
+        }
+    }
+
+    private void validateCurrency(String currency) {
+        if (currency == null || currency.length() != 3) {
+            throw new ValidationException("Currency must be 3 characters (ISO 4217)");
+        }
+    }
+
+    // Getters
+    public Long getId() { return id; }
+    public String getPaymentId() { return paymentId; }
+    public Long getOrderId() { return orderId; }
+    public Long getUserId() { return userId; }
+    public BigDecimal getAmount() { return amount; }
+    public String getCurrency() { return currency; }
+    public PaymentMethod getMethod() { return method; }
+    public PaymentStatus getStatus() { return status; }
+    public String getTransactionId() { return transactionId; }
+    public String getGatewayResponse() { return gatewayResponse; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getProcessedAt() { return processedAt; }
+
+    // Package-private setters for persistence
+    void setId(Long id) { this.id = id; }
 }

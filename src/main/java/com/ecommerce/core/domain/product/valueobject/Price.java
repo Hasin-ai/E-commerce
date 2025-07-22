@@ -2,7 +2,6 @@ package com.ecommerce.core.domain.product.valueobject;
 
 import com.ecommerce.shared.exception.ValidationException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public class Price {
     private final BigDecimal amount;
@@ -10,12 +9,8 @@ public class Price {
 
     public Price(BigDecimal amount, String currency) {
         validate(amount, currency);
-        this.amount = amount.setScale(2, RoundingMode.HALF_UP);
+        this.amount = amount;
         this.currency = currency.toUpperCase();
-    }
-
-    public Price(String amount, String currency) {
-        this(new BigDecimal(amount), currency);
     }
 
     private void validate(BigDecimal amount, String currency) {
@@ -28,31 +23,11 @@ public class Price {
         if (currency == null || currency.trim().isEmpty()) {
             throw new ValidationException("Currency cannot be empty");
         }
-        if (!currency.matches("^[A-Z]{3}$")) {
-            throw new ValidationException("Currency must be a valid 3-letter code");
+        if (currency.length() != 3) {
+            throw new ValidationException("Currency must be 3 characters (ISO 4217)");
         }
     }
 
-    public boolean isNegative() {
-        return amount.compareTo(BigDecimal.ZERO) < 0;
-    }
-
-    public boolean isZero() {
-        return amount.compareTo(BigDecimal.ZERO) == 0;
-    }
-
-    public Price add(Price other) {
-        if (!this.currency.equals(other.currency)) {
-            throw new ValidationException("Cannot add prices with different currencies");
-        }
-        return new Price(this.amount.add(other.amount), this.currency);
-    }
-
-    public Price multiply(int quantity) {
-        return new Price(this.amount.multiply(BigDecimal.valueOf(quantity)), this.currency);
-    }
-
-    // Getters
     public BigDecimal getAmount() { return amount; }
     public String getCurrency() { return currency; }
 
@@ -67,10 +42,5 @@ public class Price {
     @Override
     public int hashCode() {
         return amount.hashCode() + currency.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return amount + " " + currency;
     }
 }

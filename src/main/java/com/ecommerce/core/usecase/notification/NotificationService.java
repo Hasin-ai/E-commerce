@@ -1,90 +1,110 @@
 package com.ecommerce.core.usecase.notification;
 
-import com.ecommerce.core.domain.notification.Notification;
-import lombok.Builder;
-import lombok.Data;
+import com.ecommerce.core.domain.notification.entity.Notification;
+import com.ecommerce.core.domain.notification.repository.NotificationRepository;
+import com.ecommerce.core.domain.notification.valueobject.NotificationType;
+import com.ecommerce.core.domain.notification.valueobject.NotificationStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
- * Service interface for managing notifications.
+ * Service interface for handling notifications across the application.
+ * Provides methods for creating, sending, and managing notifications.
  */
 public interface NotificationService {
 
     /**
-     * Send a notification to a user.
+     * Create a new notification without sending it immediately
      */
-    Notification sendNotification(SendNotificationRequest request);
+    Notification createNotification(Long userId, String subject, String message,
+                                    NotificationType type, String recipient);
 
     /**
-     * Get all notifications for a user.
+     * Send a notification immediately
      */
-    List<Notification> getUserNotifications(Long userId);
+    Notification sendNotification(Long userId, String subject, String message,
+                                  NotificationType type, String recipient);
 
     /**
-     * Get unread notifications for a user.
+     * Send an existing notification
+     */
+    Notification sendNotification(Notification notification);
+
+    /**
+     * Get notifications for a specific user with pagination
+     */
+    List<Notification> getNotificationsByUserId(Long userId, int page, int size);
+
+    /**
+     * Get unread notifications for a user
      */
     List<Notification> getUnreadNotifications(Long userId);
 
     /**
-     * Mark a notification as read.
+     * Mark notification as read
      */
-    void markAsRead(Long notificationId, Long userId);
+    void markAsRead(Long notificationId);
 
     /**
-     * Mark all notifications as read for a user.
+     * Mark multiple notifications as read
+     */
+    void markAsRead(List<Long> notificationIds);
+
+    /**
+     * Mark all notifications for a user as read
      */
     void markAllAsRead(Long userId);
 
     /**
-     * Get unread notification count for a user.
+     * Delete old notifications (cleanup)
      */
-    Long getUnreadCount(Long userId);
+    void deleteOldNotifications(LocalDateTime before);
 
     /**
-     * Delete a notification.
+     * Get notification by ID
      */
-    void deleteNotification(Long notificationId, Long userId);
+    Optional<Notification> getById(Long id);
 
     /**
-     * Send email notification.
+     * Schedule a notification for later delivery
      */
-    void sendEmailNotification(EmailNotificationRequest request);
+    Notification scheduleNotification(Long userId, String subject, String message,
+                                      NotificationType type, String recipient,
+                                      LocalDateTime scheduledAt);
 
     /**
-     * Send SMS notification.
+     * Cancel a scheduled notification
      */
-    void sendSmsNotification(SmsNotificationRequest request);
+    void cancelScheduledNotification(Long notificationId);
 
-    @Data
-    @Builder
-    class SendNotificationRequest {
-        private Long userId;
-        private Notification.NotificationType type;
-        private String title;
-        private String message;
-        private String email;
-        private String phoneNumber;
-        private Map<String, String> templateVariables;
-    }
+    /**
+     * Get notifications by type and status
+     */
+    List<Notification> getNotificationsByTypeAndStatus(NotificationType type,
+                                                        NotificationStatus status);
 
-    @Data
-    @Builder
-    class EmailNotificationRequest {
-        private String to;
-        private String subject;
-        private String message;
-        private String templateName;
-        private Map<String, String> templateVariables;
-    }
+    /**
+     * Retry failed notifications
+     */
+    void retryFailedNotifications();
 
-    @Data
-    @Builder
+    // Request DTOs for different notification types
+
+    /**
+     * Request object for SMS notifications
+     */
+    @lombok.Builder
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    @lombok.NoArgsConstructor
     class SmsNotificationRequest {
         private String phoneNumber;
         private String message;
-        private String templateName;
-        private Map<String, String> templateVariables;
+        private Map<String, Object> templateVariables;
     }
+
+
 }

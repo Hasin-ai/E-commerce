@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 public class SearchRequestDto {
     @NotEmpty(message = "Search query cannot be empty")
@@ -14,4 +16,8 @@ public class SearchRequestDto {
     
     @Min(value = 1, message = "Page size must be at least 1")
     private int pageSize = 10;
+
+    private Map<String, String> filters;
+    private String sortBy;
+    private String sortOrder;
 }

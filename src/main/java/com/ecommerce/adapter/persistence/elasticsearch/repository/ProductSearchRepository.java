@@ -12,4 +12,6 @@ public interface ProductSearchRepository extends ElasticsearchRepository<Product
 
     @Query("{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"name^3\", \"description\"], \"fuzziness\": \"AUTO\"}}")
     Page<Product> search(String query, Pageable pageable);
+
+    java.util.List<Product> findByNameContainingIgnoreCase(String name);
 }
