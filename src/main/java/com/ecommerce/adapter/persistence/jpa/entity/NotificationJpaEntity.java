@@ -45,6 +45,7 @@ public class NotificationJpaEntity {
     private String templateId;
 
     @Column(name = "retry_count", nullable = false)
+    @Builder.Default
     private Integer retryCount = 0;
 
     @Column(name = "scheduled_at")

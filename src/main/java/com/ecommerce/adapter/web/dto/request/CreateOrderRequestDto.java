@@ -1,43 +1,65 @@
 package com.ecommerce.adapter.web.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-
-import java.util.List;
 
 public class CreateOrderRequestDto {
 
-    @NotNull(message = "User ID is required")
-    @JsonProperty("user_id")
-    private Long userId;
+    @Valid
+    @NotNull(message = "Shipping address is required")
+    @JsonProperty("shippingAddress")
+    private AddressDto shippingAddress;
 
-    @NotEmpty(message = "Order must have at least one item")
-    private List<OrderItemDto> items;
+    @Valid
+    @NotNull(message = "Billing address is required")
+    @JsonProperty("billingAddress")
+    private AddressDto billingAddress;
 
-    // Getters and Setters
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    // Constructors
+    public CreateOrderRequestDto() {}
 
-    public List<OrderItemDto> getItems() { return items; }
-    public void setItems(List<OrderItemDto> items) { this.items = items; }
+    // Getters and setters
+    public AddressDto getShippingAddress() { return shippingAddress; }
+    public void setShippingAddress(AddressDto shippingAddress) { this.shippingAddress = shippingAddress; }
 
-    public static class OrderItemDto {
+    public AddressDto getBillingAddress() { return billingAddress; }
+    public void setBillingAddress(AddressDto billingAddress) { this.billingAddress = billingAddress; }
 
-        @NotNull(message = "Product ID is required")
-        @JsonProperty("product_id")
-        private Long productId;
+    public static class AddressDto {
+        @NotNull(message = "Street is required")
+        private String street;
 
-        @NotNull(message = "Quantity is required")
-        @Positive(message = "Quantity must be positive")
-        private Integer quantity;
+        @NotNull(message = "City is required")
+        private String city;
 
-        // Getters and Setters
-        public Long getProductId() { return productId; }
-        public void setProductId(Long productId) { this.productId = productId; }
+        @NotNull(message = "State is required")
+        private String state;
 
-        public Integer getQuantity() { return quantity; }
-        public void setQuantity(Integer quantity) { this.quantity = quantity; }
+        @NotNull(message = "Zip code is required")
+        @JsonProperty("zipCode")
+        private String zipCode;
+
+        @NotNull(message = "Country is required")
+        private String country;
+
+        // Constructors
+        public AddressDto() {}
+
+        // Getters and setters
+        public String getStreet() { return street; }
+        public void setStreet(String street) { this.street = street; }
+
+        public String getCity() { return city; }
+        public void setCity(String city) { this.city = city; }
+
+        public String getState() { return state; }
+        public void setState(String state) { this.state = state; }
+
+        public String getZipCode() { return zipCode; }
+        public void setZipCode(String zipCode) { this.zipCode = zipCode; }
+
+        public String getCountry() { return country; }
+        public void setCountry(String country) { this.country = country; }
     }
 }

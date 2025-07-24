@@ -1,43 +1,45 @@
 package com.ecommerce.core.usecase.notification;
 
 import com.ecommerce.core.domain.notification.entity.Notification;
-import com.ecommerce.core.domain.notification.repository.NotificationRepository;
-import com.ecommerce.core.domain.notification.valueobject.NotificationType;
+import com.ecommerce.core.domain.notification.valueobject.NotificationStatus;
+import com.ecommerce.infrastructure.service.NotificationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
+@RequiredArgsConstructor
 public class SendNotificationUseCase {
-    private final NotificationRepository notificationRepository;
-
-    public SendNotificationUseCase(NotificationRepository notificationRepository) {
-        this.notificationRepository = notificationRepository;
-    }
-
-    public Notification execute(Long userId, NotificationType type, String subject,
-                              String message, String recipient) {
-
-        Notification notification = new Notification(userId, type, subject, message, recipient);
-
-        // Save notification first
-        notification = notificationRepository.save(notification);
-
-        // Simulate sending (in real implementation, this would integrate with actual services)
+    
+    private final NotificationService notificationService;
+    
+    public SendNotificationResponse execute(SendNotificationRequest request) {
         try {
-            simulateSending(notification);
-            notification.markAsSent();
+            Notification notification = Notification.builder()
+                    .userId(request.getUserId())
+                    .title(request.getTitle())
+                    .message(request.getMessage())
+                    .type(request.getType())
+                    .channel(request.getChannel())
+                    .data(request.getData())
+                    .status(NotificationStatus.PENDING)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            
+            Long notificationId = notificationService.sendNotification(notification);
+            
+            return SendNotificationResponse.builder()
+                    .notificationId(notificationId)
+                    .success(true)
+                    .message("Notification sent successfully")
+                    .build();
+                    
         } catch (Exception e) {
-            notification.markAsFailed();
+            return SendNotificationResponse.builder()
+                    .success(false)
+                    .message("Failed to send notification: " + e.getMessage())
+                    .build();
         }
-
-        return notificationRepository.save(notification);
-    }
-
-    private void simulateSending(Notification notification) {
-        // Simulate email/SMS/push notification sending
-        // In real implementation, integrate with:
-        // - SendGrid/AWS SES for email
-        // - Twilio for SMS
-        // - Firebase for push notifications
-        System.out.println("Sending " + notification.getType() + " notification to " + notification.getRecipient());
     }
 }

@@ -12,11 +12,19 @@ public class ProductResponseDto {
     private String description;
     private String sku;
 
-    @JsonProperty("basePrice")
-    private BigDecimal basePrice;
+    private BigDecimal price;
 
-    @JsonProperty("salePrice")
-    private BigDecimal salePrice;
+    @JsonProperty("discountPrice")
+    private BigDecimal discountPrice;
+
+    @JsonProperty("categoryId")
+    private Long categoryId;
+
+    @JsonProperty("imageUrl")
+    private String imageUrl;
+
+    @JsonProperty("stockQuantity")
+    private Integer stockQuantity;
 
     private String currency;
 
@@ -35,24 +43,6 @@ public class ProductResponseDto {
     // Constructors
     public ProductResponseDto() {}
 
-    public ProductResponseDto(Long id, String name, String slug, String description,
-                              String sku, BigDecimal basePrice, BigDecimal salePrice,
-                              String currency, boolean isActive, boolean isFeatured,
-                              LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.id = id;
-        this.name = name;
-        this.slug = slug;
-        this.description = description;
-        this.sku = sku;
-        this.basePrice = basePrice;
-        this.salePrice = salePrice;
-        this.currency = currency;
-        this.isActive = isActive;
-        this.isFeatured = isFeatured;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
-
     // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -69,11 +59,20 @@ public class ProductResponseDto {
     public String getSku() { return sku; }
     public void setSku(String sku) { this.sku = sku; }
 
-    public BigDecimal getBasePrice() { return basePrice; }
-    public void setBasePrice(BigDecimal basePrice) { this.basePrice = basePrice; }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 
-    public BigDecimal getSalePrice() { return salePrice; }
-    public void setSalePrice(BigDecimal salePrice) { this.salePrice = salePrice; }
+    public BigDecimal getDiscountPrice() { return discountPrice; }
+    public void setDiscountPrice(BigDecimal discountPrice) { this.discountPrice = discountPrice; }
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public Integer getStockQuantity() { return stockQuantity; }
+    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }

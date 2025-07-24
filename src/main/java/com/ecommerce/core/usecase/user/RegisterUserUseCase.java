@@ -4,66 +4,54 @@ import com.ecommerce.core.domain.user.entity.User;
 import com.ecommerce.core.domain.user.repository.UserRepository;
 import com.ecommerce.core.domain.user.valueobject.Email;
 import com.ecommerce.core.domain.user.valueobject.Password;
-import com.ecommerce.shared.exception.BusinessException;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.ecommerce.core.domain.user.valueobject.Phone;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class RegisterUserUseCase {
-    private final UserRepository userRepository;
 
-    public RegisterUserUseCase(UserRepository userRepository) {
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public RegisterUserUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public RegisterUserResponse execute(RegisterUserRequest request) {
-        Email userEmail = new Email(request.getEmail());
-
-        if (userRepository.existsByEmail(userEmail)) {
-            throw new BusinessException("User with this email already exists");
+        // Validate email is not already registered
+        Email email = new Email(request.getEmail());
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Email already registered");
         }
 
-        User user = new User(request.getEmail(), request.getPassword(), request.getFirstName(), request.getLastName(), request.getPhone());
+        // Create new user
+        Password encodedPassword = new Password(passwordEncoder.encode(request.getPassword()));
+        Phone phone = request.getPhone() != null ? new Phone(request.getPhone()) : null;
+
+        User user = new User(
+            request.getFirstName(),
+            request.getLastName(),
+            email,
+            encodedPassword,
+            phone
+        );
 
         User savedUser = userRepository.save(user);
 
-        return RegisterUserResponse.builder()
-                .id(savedUser.getId())
-                .firstName(savedUser.getFirstName())
-                .lastName(savedUser.getLastName())
-                .email(savedUser.getEmail().getValue())
-                .phone(savedUser.getPhone())
-                .success(true)
-                .message("User registered successfully")
-                .build();
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RegisterUserRequest {
-        private String firstName;
-        private String lastName;
-        private String email;
-        private String password;
-        private String phone;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RegisterUserResponse {
-        private Long id;
-        private String firstName;
-        private String lastName;
-        private String email;
-        private String phone;
-        private boolean success;
-        private String message;
+        return new RegisterUserResponse(
+            savedUser.getId(),
+            savedUser.getFirstName(),
+            savedUser.getLastName(),
+            savedUser.getEmail().getValue(),
+            savedUser.getPhone() != null ? savedUser.getPhone().getValue() : null,
+            savedUser.isActive(),
+            savedUser.isEmailVerified(),
+            savedUser.getCreatedAt(),
+            savedUser.getUpdatedAt()
+        );
     }
 }

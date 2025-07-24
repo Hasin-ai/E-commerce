@@ -1,19 +1,20 @@
 package com.ecommerce.core.domain.analytics.repository;
 
 import com.ecommerce.core.domain.analytics.entity.AnalyticsEvent;
-import com.ecommerce.core.domain.analytics.valueobject.EventType;
+import com.ecommerce.core.domain.analytics.entity.SalesMetrics;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 public interface AnalyticsRepository {
-    AnalyticsEvent save(AnalyticsEvent event);
-    List<AnalyticsEvent> findByUserId(Long userId);
-    List<AnalyticsEvent> findByEventType(EventType eventType);
-    List<AnalyticsEvent> findBySessionId(String sessionId);
-    List<AnalyticsEvent> findByTimestampBetween(LocalDateTime start, LocalDateTime end);
-    Map<EventType, Long> getEventCountsByType(LocalDateTime start, LocalDateTime end);
-    List<Map<String, Object>> getDailyActiveUsers(LocalDateTime start, LocalDateTime end);
-    List<Map<String, Object>> getTopProducts(LocalDateTime start, LocalDateTime end, int limit);
+    void trackEvent(AnalyticsEvent event);
+    List<AnalyticsEvent> findEventsByType(String eventType, LocalDate from, LocalDate to);
+    List<AnalyticsEvent> findEventsByUser(Long userId, LocalDate from, LocalDate to);
+    
+    SalesMetrics getSalesMetrics(LocalDate date);
+    List<SalesMetrics> getSalesMetrics(LocalDate from, LocalDate to);
+    
+    List<Object[]> getTopProducts(LocalDate from, LocalDate to, int limit);
+    List<Object[]> getTopCategories(LocalDate from, LocalDate to, int limit);
+    List<Object[]> getCustomerSegments();
 }

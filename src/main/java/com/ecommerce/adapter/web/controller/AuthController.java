@@ -1,16 +1,17 @@
 package com.ecommerce.adapter.web.controller;
 
-import com.ecommerce.adapter.web.dto.request.RegisterUserRequestDto;
 import com.ecommerce.adapter.web.dto.request.LoginRequestDto;
-import com.ecommerce.adapter.web.dto.response.UserResponseDto;
+import com.ecommerce.adapter.web.dto.request.RegisterUserRequestDto;
 import com.ecommerce.adapter.web.dto.response.AuthResponseDto;
-import com.ecommerce.adapter.web.mapper.UserMapper;
+import com.ecommerce.adapter.web.dto.response.UserResponseDto;
 import com.ecommerce.core.usecase.user.RegisterUserUseCase;
-import com.ecommerce.core.usecase.user.AuthenticateUserUseCase;
+import com.ecommerce.core.usecase.user.LoginUserUseCase;
+import com.ecommerce.core.usecase.user.RegisterUserRequest;
+import com.ecommerce.core.usecase.user.LoginUserRequest;
+import com.ecommerce.core.usecase.user.RegisterUserResponse;
+import com.ecommerce.core.usecase.user.LoginUserResponse;
 import com.ecommerce.shared.dto.ApiResponse;
-import com.ecommerce.infrastructure.security.JwtTokenProvider;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -24,54 +25,89 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final RegisterUserUseCase registerUserUseCase;
-    private final AuthenticateUserUseCase authenticateUserUseCase;
-    private final UserMapper userMapper;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final LoginUserUseCase loginUserUseCase;
 
-    @Autowired
-    public AuthController(RegisterUserUseCase registerUserUseCase,
-                         AuthenticateUserUseCase authenticateUserUseCase,
-                         UserMapper userMapper,
-                         JwtTokenProvider jwtTokenProvider) {
+    public AuthController(RegisterUserUseCase registerUserUseCase, LoginUserUseCase loginUserUseCase) {
         this.registerUserUseCase = registerUserUseCase;
-        this.authenticateUserUseCase = authenticateUserUseCase;
-        this.userMapper = userMapper;
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.loginUserUseCase = loginUserUseCase;
     }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponseDto>> register(
             @Valid @RequestBody RegisterUserRequestDto requestDto) {
-
-        RegisterUserUseCase.RegisterUserRequest request =
-            userMapper.toRegisterUserRequest(requestDto);
-
-        RegisterUserUseCase.RegisterUserResponse response =
-            registerUserUseCase.execute(request);
-
-        UserResponseDto responseDto = userMapper.toUserResponse(response);
-
+        
+        RegisterUserRequest request = new RegisterUserRequest(
+            requestDto.getFirstName(),
+            requestDto.getLastName(),
+            requestDto.getEmail(),
+            requestDto.getPassword(),
+            requestDto.getPhone()
+        );
+        
+        RegisterUserResponse response = registerUserUseCase.execute(request);
+        
+        UserResponseDto userDto = new UserResponseDto(
+            response.getId(),
+            response.getFirstName(),
+            response.getLastName(),
+            response.getEmail(),
+            response.getPhone(),
+            response.isActive(),
+            response.isEmailVerified(),
+            response.getCreatedAt(),
+            response.getUpdatedAt()
+        );
+        
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(ApiResponse.success(responseDto, "User registered successfully"));
+            .body(ApiResponse.success(userDto, "User registered successfully"));
     }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponseDto>> login(
             @Valid @RequestBody LoginRequestDto requestDto) {
+        
+        LoginUserRequest request = new LoginUserRequest(
+            requestDto.getEmail(),
+            requestDto.getPassword()
+        );
+        
+        LoginUserResponse response = loginUserUseCase.execute(request);
+        
+        UserResponseDto userDto = new UserResponseDto(
+            response.getUser().getId(),
+            response.getUser().getFirstName(),
+            response.getUser().getLastName(),
+            response.getUser().getEmail(),
+            response.getUser().getPhone(),
+            response.getUser().isActive(),
+            response.getUser().isEmailVerified(),
+            response.getUser().getCreatedAt(),
+            response.getUser().getUpdatedAt()
+        );
+        
+        AuthResponseDto authDto = new AuthResponseDto(
+            response.getAccessToken(),
+            "Bearer",
+            response.getExpiresIn(),
+            userDto
+        );
+        
+        return ResponseEntity.ok(ApiResponse.success(authDto, "Login successful"));
+    }
 
-        AuthenticateUserUseCase.AuthenticateUserRequest request =
-            userMapper.toAuthenticateUserRequest(requestDto);
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        // JWT tokens are stateless, so logout is handled client-side
+        // In a production system, you might want to implement token blacklisting
+        return ResponseEntity.ok(ApiResponse.success(null, "Logout successful"));
+    }
 
-        AuthenticateUserUseCase.AuthenticateUserResponse response =
-            authenticateUserUseCase.execute(request);
-
-        // Generate JWT token
-        String accessToken = jwtTokenProvider.generateToken(response.getEmail());
-        long expiresIn = jwtTokenProvider.getExpirationTime();
-
-        AuthResponseDto responseDto = userMapper.toAuthResponse(accessToken, expiresIn, response);
-
-        return ResponseEntity.ok(ApiResponse.success(responseDto, "Login successful"));
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponseDto>> refreshToken(
+            @RequestHeader("Authorization") String refreshToken) {
+        
+        // TODO: Implement refresh token logic
+        return ResponseEntity.ok(ApiResponse.success(null, "Token refreshed successfully"));
     }
 }

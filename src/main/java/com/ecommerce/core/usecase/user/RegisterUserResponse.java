@@ -1,87 +1,65 @@
 package com.ecommerce.core.usecase.user;
 
+import java.time.LocalDateTime;
+
 public class RegisterUserResponse {
-    private Long userId;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String phone;
-    private String message;
-    private boolean success;
 
-    public RegisterUserResponse() {}
+    private final Long id;
+    private final String firstName;
+    private final String lastName;
+    private final String email;
+    private final String phone;
+    private final boolean isActive;
+    private final boolean isEmailVerified;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
-    public RegisterUserResponse(Long userId, String firstName, String lastName, String email, String phone, String message, boolean success) {
-        this.userId = userId;
+    public RegisterUserResponse(Long id, String firstName, String lastName, String email, String phone,
+                               boolean isActive, boolean isEmailVerified, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phone = phone;
-        this.message = message;
-        this.success = success;
+        this.isActive = isActive;
+        this.isEmailVerified = isEmailVerified;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    public static RegisterUserResponse success(Long userId, String firstName, String lastName, String email, String phone, String message) {
-        return new RegisterUserResponse(userId, firstName, lastName, email, phone, message, true);
-    }
-
-    public static RegisterUserResponse failure(String message) {
-        return new RegisterUserResponse(null, null, null, null, null, message, false);
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public Long getId() {
+        return id;
     }
 
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
     public String getLastName() {
         return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public String getMessage() {
-        return message;
+    public boolean isEmailVerified() {
+        return isEmailVerified;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }

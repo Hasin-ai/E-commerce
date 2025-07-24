@@ -3,6 +3,11 @@ package com.ecommerce.adapter.web.controller;
 import com.ecommerce.adapter.web.dto.request.CreateProductRequestDto;
 import com.ecommerce.adapter.web.dto.request.UpdateProductRequestDto;
 import com.ecommerce.adapter.web.dto.response.ProductResponseDto;
+import com.ecommerce.core.usecase.product.GetProductUseCase;
+import com.ecommerce.core.usecase.product.GetProductRequest;
+import com.ecommerce.core.usecase.product.GetProductResponse;
+import com.ecommerce.core.usecase.product.GetProductsUseCase;
+import com.ecommerce.core.usecase.product.GetProductsRequest;
 import com.ecommerce.shared.dto.ApiResponse;
 
 import org.springframework.data.domain.Page;
@@ -22,12 +27,13 @@ import jakarta.validation.constraints.Positive;
 @Validated
 public class ProductController {
 
-    // TODO: Inject use cases when implemented
-    // private final CreateProductUseCase createProductUseCase;
-    // private final GetProductUseCase getProductUseCase;
-    // private final UpdateProductUseCase updateProductUseCase;
-    // private final DeleteProductUseCase deleteProductUseCase;
-    // private final SearchProductsUseCase searchProductsUseCase;
+    private final GetProductUseCase getProductUseCase;
+    private final GetProductsUseCase getProductsUseCase;
+
+    public ProductController(GetProductUseCase getProductUseCase, GetProductsUseCase getProductsUseCase) {
+        this.getProductUseCase = getProductUseCase;
+        this.getProductsUseCase = getProductsUseCase;
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<ProductResponseDto>>> getAllProducts(
@@ -36,24 +42,34 @@ public class ProductController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean featured) {
         
-        // TODO: Implement with use case
-        return ResponseEntity.ok(ApiResponse.success(null, "Products retrieved successfully"));
+        Long categoryId = category != null ? Long.parseLong(category) : null;
+        GetProductsRequest request = new GetProductsRequest(categoryId, search, featured);
+        
+        Page<GetProductResponse> products = getProductsUseCase.execute(request, pageable);
+        Page<ProductResponseDto> productDtos = products.map(this::mapToProductResponseDto);
+        
+        return ResponseEntity.ok(ApiResponse.success(productDtos, "Products retrieved successfully"));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductResponseDto>> getProductById(
             @PathVariable @NotNull @Positive Long id) {
         
-        // TODO: Implement with use case
-        return ResponseEntity.ok(ApiResponse.success(null, "Product retrieved successfully"));
+        GetProductRequest request = new GetProductRequest(id);
+        GetProductResponse product = getProductUseCase.execute(request);
+        ProductResponseDto productDto = mapToProductResponseDto(product);
+        
+        return ResponseEntity.ok(ApiResponse.success(productDto, "Product retrieved successfully"));
     }
 
     @GetMapping("/slug/{slug}")
     public ResponseEntity<ApiResponse<ProductResponseDto>> getProductBySlug(
             @PathVariable String slug) {
         
-        // TODO: Implement with use case
-        return ResponseEntity.ok(ApiResponse.success(null, "Product retrieved successfully"));
+        GetProductResponse product = getProductUseCase.executeBySlug(slug);
+        ProductResponseDto productDto = mapToProductResponseDto(product);
+        
+        return ResponseEntity.ok(ApiResponse.success(productDto, "Product retrieved successfully"));
     }
 
     @PostMapping
@@ -90,8 +106,10 @@ public class ProductController {
     public ResponseEntity<ApiResponse<Page<ProductResponseDto>>> getFeaturedProducts(
             Pageable pageable) {
         
-        // TODO: Implement with use case
-        return ResponseEntity.ok(ApiResponse.success(null, "Featured products retrieved successfully"));
+        Page<GetProductResponse> products = getProductsUseCase.getFeaturedProducts(pageable);
+        Page<ProductResponseDto> productDtos = products.map(this::mapToProductResponseDto);
+        
+        return ResponseEntity.ok(ApiResponse.success(productDtos, "Featured products retrieved successfully"));
     }
 
     @GetMapping("/category/{categoryId}")
@@ -99,7 +117,27 @@ public class ProductController {
             @PathVariable @NotNull @Positive Long categoryId,
             Pageable pageable) {
         
-        // TODO: Implement with use case
-        return ResponseEntity.ok(ApiResponse.success(null, "Products by category retrieved successfully"));
+        Page<GetProductResponse> products = getProductsUseCase.getProductsByCategory(categoryId, pageable);
+        Page<ProductResponseDto> productDtos = products.map(this::mapToProductResponseDto);
+        
+        return ResponseEntity.ok(ApiResponse.success(productDtos, "Products by category retrieved successfully"));
+    }
+
+    private ProductResponseDto mapToProductResponseDto(GetProductResponse product) {
+        ProductResponseDto dto = new ProductResponseDto();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setDescription(product.getDescription());
+        dto.setSku(product.getSku());
+        dto.setPrice(product.getPrice());
+        dto.setDiscountPrice(product.getDiscountPrice());
+        dto.setCategoryId(product.getCategoryId());
+        dto.setImageUrl(product.getImageUrl());
+        dto.setStockQuantity(product.getStockQuantity());
+        dto.setActive(product.isActive());
+        dto.setFeatured(product.isFeatured());
+        dto.setCreatedAt(product.getCreatedAt());
+        dto.setUpdatedAt(product.getUpdatedAt());
+        return dto;
     }
 }
