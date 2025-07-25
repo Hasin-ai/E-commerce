@@ -14,10 +14,15 @@ import java.util.List;
 @AllArgsConstructor
 public class SearchProductsResponse {
     private List<SearchResult> results;
-    private long totalElements;
-    private int totalPages;
-    private int currentPage;
-    private int size;
+    private List<SearchResult> products; // Alias for results
+    private Integer totalElements;
+    private Integer totalPages;
+    private Integer currentPage;
+    private Integer size;
     private boolean hasNext;
     private boolean hasPrevious;
+
+    public List<SearchResult> getProducts() {
+        return results != null ? results : products;
+    }
 }

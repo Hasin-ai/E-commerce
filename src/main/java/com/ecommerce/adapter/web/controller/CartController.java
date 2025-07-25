@@ -9,6 +9,12 @@ import com.ecommerce.core.usecase.cart.GetCartResponse;
 import com.ecommerce.core.usecase.cart.AddCartItemUseCase;
 import com.ecommerce.core.usecase.cart.AddCartItemRequest;
 import com.ecommerce.core.usecase.cart.AddCartItemResponse;
+import com.ecommerce.core.usecase.cart.RemoveCartItemUseCase;
+import com.ecommerce.core.usecase.cart.RemoveCartItemRequest;
+import com.ecommerce.core.usecase.cart.RemoveCartItemResponse;
+import com.ecommerce.core.usecase.cart.ClearCartUseCase;
+import com.ecommerce.core.usecase.cart.ClearCartRequest;
+import com.ecommerce.core.usecase.cart.ClearCartResponse;
 import com.ecommerce.core.domain.user.repository.UserRepository;
 import com.ecommerce.shared.dto.ApiResponse;
 
@@ -30,12 +36,17 @@ public class CartController {
 
     private final GetCartUseCase getCartUseCase;
     private final AddCartItemUseCase addCartItemUseCase;
+    private final RemoveCartItemUseCase removeCartItemUseCase;
+    private final ClearCartUseCase clearCartUseCase;
     private final UserRepository userRepository;
 
-    public CartController(GetCartUseCase getCartUseCase, AddCartItemUseCase addCartItemUseCase, 
+    public CartController(GetCartUseCase getCartUseCase, AddCartItemUseCase addCartItemUseCase,
+                         RemoveCartItemUseCase removeCartItemUseCase, ClearCartUseCase clearCartUseCase,
                          UserRepository userRepository) {
         this.getCartUseCase = getCartUseCase;
         this.addCartItemUseCase = addCartItemUseCase;
+        this.removeCartItemUseCase = removeCartItemUseCase;
+        this.clearCartUseCase = clearCartUseCase;
         this.userRepository = userRepository;
     }
 
@@ -69,7 +80,7 @@ public class CartController {
         AddCartItemResponse response = addCartItemUseCase.execute(request);
         CartResponseDto cartDto = mapToCartResponseDto(response);
         
-        return ResponseEntity.ok(ApiResponse.success(cartDto, response.getMessage()));
+        return ResponseEntity.status(201).body(ApiResponse.success(cartDto, response.getMessage()));
     }
 
     @PutMapping("/items/{itemId}")
@@ -90,17 +101,32 @@ public class CartController {
             Authentication authentication) {
         
         String userEmail = authentication.getName();
+        Long userId = getUserIdFromEmail(userEmail);
         
-        // TODO: Implement with use case
-        return ResponseEntity.ok(ApiResponse.success(null, "Item removed from cart successfully"));
+        RemoveCartItemRequest request = RemoveCartItemRequest.byCartItemId(userId, itemId);
+        RemoveCartItemResponse response = removeCartItemUseCase.execute(request);
+        
+        if (response.isSuccess()) {
+            CartResponseDto cartDto = mapToCartResponseDto(response.getCart());
+            return ResponseEntity.ok(ApiResponse.success(cartDto, response.getMessage()));
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.error(response.getMessage()));
+        }
     }
 
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> clearCart(Authentication authentication) {
         String userEmail = authentication.getName();
+        Long userId = getUserIdFromEmail(userEmail);
         
-        // TODO: Implement with use case
-        return ResponseEntity.ok(ApiResponse.success(null, "Cart cleared successfully"));
+        ClearCartRequest request = ClearCartRequest.forUser(userId);
+        ClearCartResponse response = clearCartUseCase.execute(request);
+        
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(ApiResponse.success(null, response.getMessage()));
+        } else {
+            return ResponseEntity.badRequest().body(ApiResponse.error(response.getMessage()));
+        }
     }
 
     @GetMapping("/count")
@@ -160,6 +186,36 @@ public class CartController {
         // Map cart items
         if (response.getItems() != null) {
             java.util.List<CartResponseDto.CartItemDto> itemDtos = response.getItems().stream()
+                .map(item -> {
+                    CartResponseDto.CartItemDto itemDto = new CartResponseDto.CartItemDto();
+                    itemDto.setId(item.getId());
+                    itemDto.setProductId(item.getProductId());
+                    itemDto.setProductName(item.getProductName());
+                    itemDto.setProductSku(null); // CartItem doesn't have SKU
+                    itemDto.setQuantity(item.getQuantity());
+                    itemDto.setUnitPrice(item.getUnitPrice());
+                    itemDto.setTotalPrice(item.getTotalPrice());
+                    return itemDto;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            dto.setItems(itemDtos);
+        }
+        
+        return dto;
+    }
+
+    private CartResponseDto mapToCartResponseDto(com.ecommerce.core.domain.cart.entity.Cart cart) {
+        CartResponseDto dto = new CartResponseDto();
+        dto.setId(cart.getId());
+        dto.setUserId(cart.getUserId());
+        dto.setTotalAmount(cart.getTotalAmount());
+        dto.setTotalItems(cart.getTotalItems());
+        dto.setCreatedAt(cart.getCreatedAt());
+        dto.setUpdatedAt(cart.getUpdatedAt());
+        
+        // Map cart items
+        if (cart.getItems() != null) {
+            java.util.List<CartResponseDto.CartItemDto> itemDtos = cart.getItems().stream()
                 .map(item -> {
                     CartResponseDto.CartItemDto itemDto = new CartResponseDto.CartItemDto();
                     itemDto.setId(item.getId());

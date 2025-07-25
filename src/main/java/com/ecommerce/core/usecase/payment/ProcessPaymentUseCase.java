@@ -74,6 +74,7 @@ public class ProcessPaymentUseCase {
             PaymentGatewayResponse gatewayResponse = paymentGatewayService.processPayment(
                 new PaymentGatewayRequest(
                     paymentId,
+                    request.getOrderId(),
                     request.getAmount(),
                     request.getCurrency(),
                     request.getPaymentMethodId(),

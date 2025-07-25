@@ -10,7 +10,7 @@ public class CategoryJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_id")
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "name", nullable = false, length = 255)
@@ -19,8 +19,7 @@ public class CategoryJpaEntity {
     @Column(name = "slug", nullable = false, unique = true, length = 255)
     private String slug;
 
-    @ManyToMany(mappedBy = "categories")
-    private Set<ProductJpaEntity> products;
+
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -49,8 +48,7 @@ public class CategoryJpaEntity {
     public String getSlug() { return slug; }
     public void setSlug(String slug) { this.slug = slug; }
 
-    public Set<ProductJpaEntity> getProducts() { return products; }
-    public void setProducts(Set<ProductJpaEntity> products) { this.products = products; }
+
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -1,6 +1,6 @@
 -- Create vendors table
 CREATE TABLE vendors (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     slug VARCHAR(255) UNIQUE NOT NULL,
     description TEXT,

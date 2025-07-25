@@ -4,6 +4,8 @@ import com.ecommerce.core.domain.user.entity.User;
 import com.ecommerce.core.domain.user.repository.UserRepository;
 import com.ecommerce.core.domain.user.valueobject.Email;
 import com.ecommerce.core.domain.user.valueobject.UserStatus;
+import com.ecommerce.adapter.persistence.jpa.repository.UserJpaRepository;
+import com.ecommerce.adapter.persistence.jpa.entity.UserJpaEntity;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -16,6 +18,11 @@ public class UserRepositoryImpl implements UserRepository {
     
     private final Map<Long, User> users = new ConcurrentHashMap<>();
     private final AtomicLong idGenerator = new AtomicLong(1);
+    private final UserJpaRepository userJpaRepository;
+
+    public UserRepositoryImpl(UserJpaRepository userJpaRepository) {
+        this.userJpaRepository = userJpaRepository;
+    }
 
     @Override
     public User save(User user) {
@@ -23,6 +30,37 @@ public class UserRepositoryImpl implements UserRepository {
             user.setId(idGenerator.getAndIncrement());
         }
         users.put(user.getId(), user);
+        
+        // Also save to database to satisfy foreign key constraints
+        UserJpaEntity userEntity;
+        Optional<UserJpaEntity> existingEntity = userJpaRepository.findById(user.getId());
+        
+        if (existingEntity.isPresent()) {
+            // Update existing entity
+            userEntity = existingEntity.get();
+        } else {
+            // Create new entity without setting ID (let JPA generate it)
+            userEntity = new UserJpaEntity();
+        }
+        
+        userEntity.setEmail(user.getEmail().getValue());
+        userEntity.setPassword(user.getPassword().getValue());
+        userEntity.setFirstName(user.getFirstName());
+        userEntity.setLastName(user.getLastName());
+        userEntity.setPhone(user.getPhone() != null ? user.getPhone().getValue() : null);
+        userEntity.setIsActive(user.isActive());
+        userEntity.setIsEmailVerified(user.isEmailVerified());
+        userEntity.setCreatedAt(user.getCreatedAt());
+        userEntity.setUpdatedAt(user.getUpdatedAt());
+        
+        UserJpaEntity savedEntity = userJpaRepository.save(userEntity);
+        
+        // Update the domain user ID with the generated ID if it was a new entity
+        if (user.getId() == null || !existingEntity.isPresent()) {
+            user.setId(savedEntity.getId());
+            users.put(user.getId(), user);
+        }
+        
         return user;
     }
 
@@ -78,6 +116,11 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean existsByEmail(Email email) {
         return users.values().stream()
                 .anyMatch(user -> user.getEmail().equals(email));
+    }
+    
+    @Override
+    public boolean existsById(Long id) {
+        return users.containsKey(id);
     }
 
     @Override

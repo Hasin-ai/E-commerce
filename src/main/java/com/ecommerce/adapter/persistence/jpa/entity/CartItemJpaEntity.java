@@ -17,7 +17,7 @@ public class CartItemJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cart_item_id")
+    @Column(name = "id")
     private Long id;
 
     @ManyToOne
@@ -25,13 +25,13 @@ public class CartItemJpaEntity {
     private CartJpaEntity cart;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id", referencedColumnName = "product_id")
     private ProductJpaEntity product;
 
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false)
+    @Column(name = "unit_price", nullable = false)
     private BigDecimal price;
 
     @CreatedDate

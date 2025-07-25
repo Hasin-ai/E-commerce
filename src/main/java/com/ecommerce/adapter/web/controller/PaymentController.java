@@ -119,23 +119,6 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success(null, "Payment methods retrieved successfully"));
     }
 
-    @PostMapping("/webhook/stripe")
-    public ResponseEntity<String> handleStripeWebhook(
-            @RequestBody String payload,
-            @RequestHeader("Stripe-Signature") String signature) {
-        
-        // TODO: Implement webhook handling
-        return ResponseEntity.ok("OK");
-    }
-
-    @PostMapping("/webhook/paypal")
-    public ResponseEntity<String> handlePayPalWebhook(
-            @RequestBody String payload,
-            @RequestHeader("PAYPAL-TRANSMISSION-ID") String transmissionId) {
-        
-        // TODO: Implement webhook handling
-        return ResponseEntity.ok("OK");
-    }
 
     private Long getUserIdFromEmail(String email) {
         return userRepository.findByEmail(new com.ecommerce.core.domain.user.valueobject.Email(email))

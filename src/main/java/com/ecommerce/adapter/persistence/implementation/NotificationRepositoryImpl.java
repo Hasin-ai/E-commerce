@@ -50,6 +50,16 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
+    public List<Notification> findUnreadByUserId(Long userId, Integer page, Integer size) {
+        return notifications.values().stream()
+                .filter(notification -> notification.getUserId().equals(userId) && !notification.isRead())
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .skip((long) page * size)
+                .limit(size)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Notification> findByStatus(NotificationStatus status) {
         return notifications.values().stream()
                 .filter(notification -> notification.getStatus() == status)
@@ -105,6 +115,13 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
+    public Integer countByUserId(Long userId) {
+        return (int) notifications.values().stream()
+                .filter(notification -> notification.getUserId().equals(userId))
+                .count();
+    }
+
+    @Override
     public Long countUnreadByUserId(Long userId) {
         return notifications.values().stream()
                 .filter(notification -> notification.getUserId().equals(userId) && !notification.isRead())
@@ -129,6 +146,16 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                 .filter(notification -> notification.getStatus() == status && 
                        notification.getCreatedAt().isBefore(dateTime))
                 .toList();
+    }
+
+    @Override
+    public List<Notification> findByUserId(Long userId, Integer page, Integer size) {
+        return notifications.values().stream()
+                .filter(notification -> notification.getUserId().equals(userId))
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .skip((long) page * size)
+                .limit(size)
+                .collect(Collectors.toList());
     }
 
     @Override

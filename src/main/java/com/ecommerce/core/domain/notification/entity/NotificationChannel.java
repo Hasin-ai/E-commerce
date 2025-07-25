@@ -5,5 +5,5 @@ public enum NotificationChannel {
     SMS,
     PUSH,
     IN_APP,
-    WEBSOCKET
+    WEBHOOK
 }

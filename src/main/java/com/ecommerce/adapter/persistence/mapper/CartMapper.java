@@ -20,7 +20,15 @@ public class CartMapper {
 
         CartEntity entity = new CartEntity();
         entity.setId(cart.getId());
-        entity.setUserId(cart.getUserId());
+        
+        // Create a UserJpaEntity with the userId for the foreign key relationship
+        if (cart.getUserId() != null) {
+            com.ecommerce.adapter.persistence.jpa.entity.UserJpaEntity userEntity = 
+                new com.ecommerce.adapter.persistence.jpa.entity.UserJpaEntity();
+            userEntity.setId(cart.getUserId());
+            entity.setUser(userEntity);
+        }
+        
         entity.setTotalAmount(cart.getTotalAmount());
         entity.setCreatedAt(cart.getCreatedAt());
         entity.setUpdatedAt(cart.getUpdatedAt());

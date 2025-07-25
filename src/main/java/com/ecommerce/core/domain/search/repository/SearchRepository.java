@@ -1,12 +1,11 @@
 package com.ecommerce.core.domain.search.repository;
 
-import com.ecommerce.core.domain.search.entity.SearchCriteria;
 import com.ecommerce.core.domain.search.entity.SearchResult;
-import org.springframework.data.domain.Page;
+import com.ecommerce.core.usecase.search.SearchProductsRequest;
+
+import java.util.List;
 
 public interface SearchRepository {
-    Page<SearchResult> search(SearchCriteria criteria);
-    void indexProduct(Long productId);
-    void deleteProduct(Long productId);
-    void reindexAll();
+    List<SearchResult> searchProducts(SearchProductsRequest request);
+    int countSearchResults(SearchProductsRequest request);
 }

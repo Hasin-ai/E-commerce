@@ -14,12 +14,24 @@ public class OrderAddressEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
 
-    @Column(name = "address_type", nullable = false)
+    @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
     private AddressType addressType;
 
-    @Column(name = "street", nullable = false)
-    private String street;
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
+
+    @Column(name = "company")
+    private String company;
+
+    @Column(name = "address_line_1", nullable = false)
+    private String addressLine1;
+
+    @Column(name = "address_line_2")
+    private String addressLine2;
 
     @Column(name = "city", nullable = false)
     private String city;
@@ -27,11 +39,17 @@ public class OrderAddressEntity {
     @Column(name = "state", nullable = false)
     private String state;
 
-    @Column(name = "zip_code", nullable = false)
-    private String zipCode;
+    @Column(name = "postal_code", nullable = false)
+    private String postalCode;
 
     @Column(name = "country", nullable = false)
     private String country;
+
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "created_at", nullable = false)
+    private java.time.LocalDateTime createdAt;
 
     // Constructors
     public OrderAddressEntity() {}
@@ -46,8 +64,20 @@ public class OrderAddressEntity {
     public AddressType getAddressType() { return addressType; }
     public void setAddressType(AddressType addressType) { this.addressType = addressType; }
 
-    public String getStreet() { return street; }
-    public void setStreet(String street) { this.street = street; }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getCompany() { return company; }
+    public void setCompany(String company) { this.company = company; }
+
+    public String getAddressLine1() { return addressLine1; }
+    public void setAddressLine1(String addressLine1) { this.addressLine1 = addressLine1; }
+
+    public String getAddressLine2() { return addressLine2; }
+    public void setAddressLine2(String addressLine2) { this.addressLine2 = addressLine2; }
 
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
@@ -55,11 +85,17 @@ public class OrderAddressEntity {
     public String getState() { return state; }
     public void setState(String state) { this.state = state; }
 
-    public String getZipCode() { return zipCode; }
-    public void setZipCode(String zipCode) { this.zipCode = zipCode; }
+    public String getPostalCode() { return postalCode; }
+    public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
 
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public java.time.LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public enum AddressType {
         SHIPPING,

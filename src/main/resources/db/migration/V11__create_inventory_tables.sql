@@ -1,6 +1,6 @@
 -- Create inventory table
 CREATE TABLE inventory (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     product_id BIGINT NOT NULL,
     vendor_id BIGINT NOT NULL,
     sku VARCHAR(255) NOT NULL,
@@ -11,14 +11,14 @@ CREATE TABLE inventory (
     location VARCHAR(255),
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_inventory_product FOREIGN KEY (product_id) REFERENCES products(id),
+    CONSTRAINT fk_inventory_product FOREIGN KEY (product_id) REFERENCES products(product_id),
     CONSTRAINT fk_inventory_vendor FOREIGN KEY (vendor_id) REFERENCES vendors(id),
     UNIQUE(product_id, vendor_id)
 );
 
 -- Create inventory movements table
 CREATE TABLE inventory_movements (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     inventory_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
     type VARCHAR(50) NOT NULL,
@@ -30,12 +30,12 @@ CREATE TABLE inventory_movements (
     user_id BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_inventory_movements_inventory FOREIGN KEY (inventory_id) REFERENCES inventory(id),
-    CONSTRAINT fk_inventory_movements_product FOREIGN KEY (product_id) REFERENCES products(id)
+    CONSTRAINT fk_inventory_movements_product FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
 -- Create indexes
 CREATE INDEX idx_inventory_product_id ON inventory(product_id);
 CREATE INDEX idx_inventory_vendor_id ON inventory(vendor_id);
-CREATE INDEX idx_inventory_low_stock ON inventory(quantity) WHERE quantity <= min_stock_level;
+CREATE INDEX idx_inventory_quantity ON inventory(quantity);
 CREATE INDEX idx_inventory_movements_product_id ON inventory_movements(product_id);
 CREATE INDEX idx_inventory_movements_created_at ON inventory_movements(created_at);

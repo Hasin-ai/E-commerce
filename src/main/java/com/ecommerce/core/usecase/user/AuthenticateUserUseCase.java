@@ -36,7 +36,7 @@ public class AuthenticateUserUseCase {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail().getValue())
-                .phone(user.getPhone())
+                .phone(user.getPhone() != null ? user.getPhone().getValue() : null)
                 .active(user.isActive())
                 .success(true)
                 .message("Authentication successful")

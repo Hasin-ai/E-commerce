@@ -4,22 +4,23 @@ import com.ecommerce.adapter.web.dto.request.RegisterUserRequestDto;
 import com.ecommerce.adapter.web.dto.request.LoginRequestDto;
 import com.ecommerce.adapter.web.dto.response.UserResponseDto;
 import com.ecommerce.adapter.web.dto.response.AuthResponseDto;
-import com.ecommerce.core.usecase.user.RegisterUserUseCase;
+import com.ecommerce.core.usecase.user.RegisterUserRequest;
+import com.ecommerce.core.usecase.user.RegisterUserResponse;
+import com.ecommerce.core.usecase.user.GetUserResponse;
 import com.ecommerce.core.usecase.user.AuthenticateUserUseCase;
-import com.ecommerce.core.usecase.user.GetUserUseCase;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
 
-    public RegisterUserUseCase.RegisterUserRequest toRegisterUserRequest(RegisterUserRequestDto dto) {
-        return new RegisterUserUseCase.RegisterUserRequest(
-            dto.getFirstName(),
-            dto.getLastName(),
-            dto.getEmail(),
-            dto.getPassword(),
-            dto.getPhone()
-        );
+    public RegisterUserRequest toRegisterUserRequest(RegisterUserRequestDto dto) {
+        return RegisterUserRequest.builder()
+            .firstName(dto.getFirstName())
+            .lastName(dto.getLastName())
+            .email(dto.getEmail())
+            .password(dto.getPassword())
+            .phone(dto.getPhone())
+            .build();
     }
 
     public AuthenticateUserUseCase.AuthenticateUserRequest toAuthenticateUserRequest(LoginRequestDto dto) {
@@ -29,32 +30,32 @@ public class UserMapper {
         );
     }
 
-    public UserResponseDto toUserResponse(RegisterUserUseCase.RegisterUserResponse response) {
-        return new UserResponseDto(
-            response.getId(),
-            response.getFirstName(),
-            response.getLastName(),
-            response.getEmail(),
-            response.getPhone(),
-            true, // default active status
-            false, // default email verification status
-            null, // createdAt not available in response
-            null  // updatedAt not available in response
-        );
+    public UserResponseDto toUserResponse(RegisterUserResponse response) {
+        return UserResponseDto.builder()
+            .id(response.getId())
+            .firstName(response.getFirstName())
+            .lastName(response.getLastName())
+            .email(response.getEmail())
+            .phone(response.getPhone())
+            .isActive(response.isActive())
+            .isEmailVerified(response.isEmailVerified())
+            .createdAt(response.getCreatedAt())
+            .updatedAt(response.getUpdatedAt())
+            .build();
     }
 
-    public UserResponseDto toUserResponse(GetUserUseCase.GetUserResponse response) {
-        return new UserResponseDto(
-            response.getId(),
-            response.getFirstName(),
-            response.getLastName(),
-            response.getEmail(),
-            response.getPhone(),
-            response.isActive(),
-            response.isEmailVerified(),
-            response.getCreatedAt(),
-            response.getUpdatedAt()
-        );
+    public UserResponseDto toUserResponse(GetUserResponse response) {
+        return UserResponseDto.builder()
+            .id(response.getId())
+            .firstName(response.getFirstName())
+            .lastName(response.getLastName())
+            .email(response.getEmail())
+            .phone(response.getPhone())
+            .isActive(response.isActive())
+            .isEmailVerified(false) // GetUserResponse doesn't have this field
+            .createdAt(response.getCreatedAt())
+            .updatedAt(response.getUpdatedAt())
+            .build();
     }
 
     public UserResponseDto toUserResponse(AuthenticateUserUseCase.AuthenticateUserResponse response) {
@@ -73,6 +74,6 @@ public class UserMapper {
 
     public AuthResponseDto toAuthResponse(String accessToken, long expiresIn, AuthenticateUserUseCase.AuthenticateUserResponse userResponse) {
         UserResponseDto userDto = toUserResponse(userResponse);
-        return new AuthResponseDto(accessToken, expiresIn, userDto);
+        return new AuthResponseDto(accessToken, "Bearer", expiresIn, userDto);
     }
 }

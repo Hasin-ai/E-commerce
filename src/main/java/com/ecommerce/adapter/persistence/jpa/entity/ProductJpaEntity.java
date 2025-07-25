@@ -34,6 +34,9 @@ public class ProductJpaEntity {
     @Column(name = "currency", nullable = false, length = 3)
     private String currency;
 
+    @Column(name = "category_id")
+    private Long categoryId;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
@@ -46,13 +49,7 @@ public class ProductJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToMany
-    @JoinTable(
-            name = "product_categories",
-            joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    private java.util.Set<CategoryJpaEntity> categories;
+
 
     // Constructors
     public ProductJpaEntity() {}
@@ -107,6 +104,9 @@ public class ProductJpaEntity {
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
 
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean active) { isActive = active; }
 
@@ -119,6 +119,5 @@ public class ProductJpaEntity {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public java.util.Set<CategoryJpaEntity> getCategories() { return categories; }
-    public void setCategories(java.util.Set<CategoryJpaEntity> categories) { this.categories = categories; }
+
 }

@@ -43,6 +43,20 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(com.ecommerce.shared.exception.NotFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleNotFoundException(com.ecommerce.shared.exception.NotFoundException ex) {
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(com.ecommerce.shared.exception.AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAuthenticationException(com.ecommerce.shared.exception.AuthenticationException ex) {
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
@@ -73,6 +87,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ApiResponse.error(errors, "Validation failed"));
+    }
+
+    @ExceptionHandler(com.ecommerce.shared.exception.DuplicateEmailException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDuplicateEmailException(com.ecommerce.shared.exception.DuplicateEmailException ex) {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

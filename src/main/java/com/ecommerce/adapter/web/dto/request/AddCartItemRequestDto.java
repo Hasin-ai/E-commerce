@@ -12,15 +12,8 @@ public class AddCartItemRequestDto {
     @JsonProperty("productId")
     private Long productId;
 
-    @NotBlank(message = "Product name is required")
-    @JsonProperty("productName")
-    private String productName;
-
-    @NotNull(message = "Unit price is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Unit price must be positive")
-    @Digits(integer = 10, fraction = 2, message = "Unit price must have at most 2 decimal places")
-    @JsonProperty("unitPrice")
-    private BigDecimal unitPrice;
+    // Product name and price will be fetched automatically based on productId
+    // These fields are not required in the request
 
     @NotNull(message = "Quantity is required")
     @Min(value = 1, message = "Quantity must be at least 1")
@@ -33,11 +26,7 @@ public class AddCartItemRequestDto {
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
 
-    public String getProductName() { return productName; }
-    public void setProductName(String productName) { this.productName = productName; }
-
-    public BigDecimal getUnitPrice() { return unitPrice; }
-    public void setUnitPrice(BigDecimal unitPrice) { this.unitPrice = unitPrice; }
+    // Removed productName and unitPrice getters/setters as they're not needed
 
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }

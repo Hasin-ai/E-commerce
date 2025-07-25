@@ -28,6 +28,8 @@ public interface UserRepository {
     void deleteById(Long id);
 
     boolean existsByEmail(Email email);
+    
+    boolean existsById(Long id);
 
     long count();
 

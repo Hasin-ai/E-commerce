@@ -19,6 +19,15 @@ public class Product {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String brand;
+    private String slug;
+    private boolean featured;
+
+    // Default constructor for persistence layer
+    public Product() {
+        this.isActive = true;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public Product(String name, String description, String sku, Price price, Long categoryId, int stockQuantity) {
         validateName(name);
@@ -135,15 +144,43 @@ public class Product {
     public String getDescription() { return description; }
     public String getSku() { return sku; }
     public Price getPrice() { return price; }
-    public String getCategoryId() {
-        return this.categoryId != null ? this.categoryId.toString() : null;
+    public Long getCategoryId() {
+        return this.categoryId;
     }
     public int getStockQuantity() { return stockQuantity; }
     public boolean isActive() { return isActive; }
     public List<String> getImageUrls() { return imageUrls; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public String getSlug() { return slug; }
+    public boolean isFeatured() { return featured; }
 
     // Package-private setters for persistence
-    void setId(Long id) { this.id = id; }
+    public void setId(Long id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setDescription(String description) { this.description = description; }
+    public void setSku(String sku) { this.sku = sku; }
+    public void setPrice(Price price) { this.price = price; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    public void setStockQuantity(int stockQuantity) { this.stockQuantity = stockQuantity; }
+    public void setActive(boolean active) { this.isActive = active; }
+    public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setSlug(String slug) { this.slug = slug; }
+    public void setFeatured(boolean featured) { this.featured = featured; }
+    
+    // Additional setters for compatibility
+    public void setPrice(java.math.BigDecimal price) { 
+        this.price = new Price(price, "USD"); 
+    }
+    public void setCategoryId(long categoryId) { 
+        this.categoryId = categoryId; 
+    }
+    public void setImageUrl(String imageUrl) { 
+        this.imageUrls = List.of(imageUrl); 
+    }
+    public void setCurrency(String currency) { 
+        // For compatibility - could store in Price object
+    }
 }

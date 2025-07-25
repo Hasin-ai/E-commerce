@@ -98,6 +98,14 @@ public class Order {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void handlePaymentFailed() {
+        if (this.status != OrderStatus.PENDING) {
+            throw new ValidationException("Can only mark pending orders as payment failed");
+        }
+        this.status = OrderStatus.PAYMENT_FAILED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     private void calculateAmounts() {
         this.subtotalAmount = items.stream()
             .map(OrderItem::getTotalPrice)

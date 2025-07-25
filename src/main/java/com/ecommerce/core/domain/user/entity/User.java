@@ -2,6 +2,7 @@ package com.ecommerce.core.domain.user.entity;
 
 import com.ecommerce.core.domain.user.valueobject.Email;
 import com.ecommerce.core.domain.user.valueobject.Password;
+import com.ecommerce.core.domain.user.valueobject.Phone;
 import com.ecommerce.core.domain.user.valueobject.UserRole;
 import com.ecommerce.core.domain.user.valueobject.UserStatus;
 
@@ -14,7 +15,7 @@ public class User {
     private Password password;
     private String firstName;
     private String lastName;
-    private String phone;
+    private Phone phone;
     private UserRole role;
     private UserStatus status;
     private boolean emailVerified;
@@ -48,7 +49,16 @@ public class User {
         this(email, password);
         this.firstName = firstName;
         this.lastName = lastName;
-        this.phone = phone;
+        this.phone = phone != null ? new Phone(phone) : null;
+    }
+
+    // Constructor without password (for cases where password is set separately)
+    public User(String email, String firstName, String lastName, String phone) {
+        this();
+        this.email = new Email(email);
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phone = phone != null ? new Phone(phone) : null;
     }
 
     // Business methods
@@ -142,6 +152,12 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void setEncodedPassword(String encodedPassword) {
+        // Set encoded password without validation (for already hashed passwords)
+        this.password = Password.fromEncoded(encodedPassword);
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public String getFirstName() {
         return firstName;
     }
@@ -160,12 +176,17 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public String getPhone() {
+    public Phone getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
+    public void setPhone(Phone phone) {
         this.phone = phone;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone != null ? new Phone(phone) : null;
         this.updatedAt = LocalDateTime.now();
     }
 

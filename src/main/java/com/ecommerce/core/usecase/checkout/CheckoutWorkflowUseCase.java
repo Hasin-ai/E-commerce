@@ -97,6 +97,7 @@ public class CheckoutWorkflowUseCase {
             PaymentGatewayResponse gatewayResponse = paymentGatewayService.processPayment(
                 new PaymentGatewayRequest(
                     paymentId,
+                    order.getId(),
                     order.getTotalAmount(),
                     order.getCurrency(),
                     request.getPaymentMethodId(),

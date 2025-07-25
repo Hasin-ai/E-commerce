@@ -102,6 +102,7 @@ public class PaymentEntity {
         COMPLETED,
         FAILED,
         CANCELLED,
-        REFUNDED
+        REFUNDED,
+        REQUIRES_ACTION
     }
 }

@@ -15,16 +15,6 @@ services:
     networks:
       - ecommerce-network
 
-  redis:
-    image: redis:7-alpine
-    container_name: ecommerce-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - ecommerce-network
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
     container_name: ecommerce-elasticsearch
@@ -55,7 +45,6 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
   elasticsearch_data:
 
 networks:

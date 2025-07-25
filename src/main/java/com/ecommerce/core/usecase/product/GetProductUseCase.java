@@ -1,7 +1,7 @@
 package com.ecommerce.core.usecase.product;
 
 import com.ecommerce.core.domain.product.entity.Product;
-import com.ecommerce.adapter.persistence.implementation.ProductRepositoryImpl;
+import com.ecommerce.core.domain.product.repository.ProductRepository;
 import com.ecommerce.shared.exception.NotFoundException;
 
 import org.springframework.stereotype.Service;
@@ -11,9 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GetProductUseCase {
 
-    private final ProductRepositoryImpl productRepository;
+    private final ProductRepository productRepository;
 
-    public GetProductUseCase(ProductRepositoryImpl productRepository) {
+    public GetProductUseCase(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
@@ -39,7 +39,7 @@ public class GetProductUseCase {
             product.getSku(),
             product.getPrice().getAmount(),
             null, // discountPrice - can be enhanced later
-            product.getCategoryId() != null ? Long.parseLong(product.getCategoryId()) : null,
+            product.getCategoryId(),
             product.getImageUrls() != null && !product.getImageUrls().isEmpty() 
                 ? product.getImageUrls().get(0) : null,
             product.getStockQuantity(),

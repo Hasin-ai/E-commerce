@@ -7,7 +7,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AnalyticsRepository {
-    void trackEvent(AnalyticsEvent event);
+    AnalyticsEvent trackEvent(AnalyticsEvent event);
+    AnalyticsEvent save(AnalyticsEvent event);
     List<AnalyticsEvent> findEventsByType(String eventType, LocalDate from, LocalDate to);
     List<AnalyticsEvent> findEventsByUser(Long userId, LocalDate from, LocalDate to);
     

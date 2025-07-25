@@ -21,6 +21,16 @@ public class SearchCriteria {
     private boolean inStockOnly;
     private String sortBy;
     private String sortDirection;
-    private int page;
-    private int size;
+    private Integer page;
+    private Integer size;
+
+    public static SearchCriteria defaultCriteria() {
+        return SearchCriteria.builder()
+                .page(0)
+                .size(20)
+                .inStockOnly(false)
+                .sortBy("name")
+                .sortDirection("asc")
+                .build();
+    }
 }

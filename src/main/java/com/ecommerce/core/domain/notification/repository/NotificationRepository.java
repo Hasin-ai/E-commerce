@@ -14,7 +14,10 @@ public interface NotificationRepository {
     Notification save(Notification notification);
     Optional<Notification> findById(Long id);
     List<Notification> findByUserId(Long userId);
+    List<Notification> findByUserId(Long userId, Integer page, Integer size);
     List<Notification> findByUserIdAndStatus(Long userId, NotificationStatus status);
+    List<Notification> findUnreadByUserId(Long userId, Integer page, Integer size);
+    Integer countByUserId(Long userId);
     List<Notification> findByStatus(NotificationStatus status);
     List<Notification> findByTypeAndStatus(NotificationType type, NotificationStatus status);
     List<Notification> findScheduledNotifications(LocalDateTime beforeTime);

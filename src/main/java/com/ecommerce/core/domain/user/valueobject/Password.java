@@ -16,6 +16,16 @@ public class Password {
         this.value = value;
     }
 
+    // Private constructor for encoded passwords (skips validation)
+    private Password(String value, boolean skipValidation) {
+        this.value = value;
+    }
+
+    // Factory method for encoded passwords
+    public static Password fromEncoded(String encodedPassword) {
+        return new Password(encodedPassword, true);
+    }
+
     private void validate(String password) {
         if (password == null || password.trim().isEmpty()) {
             throw new ValidationException("Password cannot be null or empty");

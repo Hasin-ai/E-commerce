@@ -1,11 +1,13 @@
 package com.ecommerce.core.usecase.cart;
 
 import com.ecommerce.core.domain.cart.entity.CartItem;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Builder
 public class GetCartResponse {
     private Long id;
     private Long userId;

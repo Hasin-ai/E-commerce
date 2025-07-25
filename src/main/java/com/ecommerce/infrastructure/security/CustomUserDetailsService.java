@@ -29,27 +29,22 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(new Email(email))
-            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        return new CustomUserDetails(
-            user.getId(),
-            user.getEmail().getValue(),
-            user.getPassword().getValue(),
-            java.util.Collections.emptyList()
-        );
+        return new CustomUserDetails(user);
     }
 
-    public static class CustomUserPrincipal implements UserDetails {
+    private static class CustomUserDetails implements UserDetails {
         private final User user;
 
-        public CustomUserPrincipal(User user) {
+        public CustomUserDetails(User user) {
             this.user = user;
         }
 
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
             List<GrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().toString()));
             return authorities;
         }
 
@@ -70,7 +65,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         @Override
         public boolean isAccountNonLocked() {
-            return user.isActive();
+            return true;
         }
 
         @Override
@@ -80,7 +75,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         @Override
         public boolean isEnabled() {
-            return user.isActive();
+            return true;
         }
 
         public User getUser() {

@@ -67,6 +67,18 @@ public class Payment {
         this.status = PaymentStatus.REFUNDED;
     }
 
+    public void updateStatus(PaymentStatus status) {
+        this.status = status;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public void setProcessedAt(LocalDateTime processedAt) {
+        this.processedAt = processedAt;
+    }
+
     private void validatePaymentId(String paymentId) {
         if (paymentId == null || paymentId.trim().isEmpty()) {
             throw new ValidationException("Payment ID cannot be empty");

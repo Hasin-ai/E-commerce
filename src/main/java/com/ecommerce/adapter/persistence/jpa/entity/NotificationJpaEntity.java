@@ -26,48 +26,37 @@ public class NotificationJpaEntity {
     @Column(name = "type", nullable = false)
     private String type;
 
-    @Column(name = "subject", nullable = false)
-    private String subject;
+    @Column(name = "title", nullable = false)
+    private String title;
 
-    @Column(name = "message", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
-    @Column(name = "recipient", nullable = false)
-    private String recipient;
-
-    @Column(name = "status", nullable = false)
-    private String status;
-
-    @Column(name = "metadata", columnDefinition = "TEXT")
-    private String metadata; // JSON string
-
-    @Column(name = "template_id")
-    private String templateId;
-
-    @Column(name = "retry_count", nullable = false)
+    @Column(name = "is_read")
     @Builder.Default
-    private Integer retryCount = 0;
+    private Boolean isRead = false;
 
-    @Column(name = "scheduled_at")
-    private LocalDateTime scheduledAt;
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
 
-    @Column(name = "sent_at")
-    private LocalDateTime sentAt;
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
+
+    @Column(name = "status")
+    @Builder.Default
+    private String status = "PENDING";
+
+    @Column(name = "error_message", columnDefinition = "TEXT")
+    private String errorMessage;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }

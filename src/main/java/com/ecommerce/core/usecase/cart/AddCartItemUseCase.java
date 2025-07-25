@@ -3,7 +3,7 @@ package com.ecommerce.core.usecase.cart;
 import com.ecommerce.core.domain.cart.entity.Cart;
 import com.ecommerce.core.domain.cart.repository.CartRepository;
 import com.ecommerce.core.domain.product.entity.Product;
-import com.ecommerce.adapter.persistence.implementation.ProductRepositoryImpl;
+import com.ecommerce.core.domain.product.repository.ProductRepository;
 import com.ecommerce.shared.exception.BusinessException;
 import com.ecommerce.shared.exception.NotFoundException;
 
@@ -15,9 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class AddCartItemUseCase {
 
     private final CartRepository cartRepository;
-    private final ProductRepositoryImpl productRepository;
+    private final ProductRepository productRepository;
 
-    public AddCartItemUseCase(CartRepository cartRepository, ProductRepositoryImpl productRepository) {
+    public AddCartItemUseCase(CartRepository cartRepository, ProductRepository productRepository) {
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
     }

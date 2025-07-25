@@ -7,12 +7,15 @@ import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRe
 import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @SpringBootApplication(exclude = {
     ElasticsearchDataAutoConfiguration.class,
     ElasticsearchRestClientAutoConfiguration.class,
     ElasticsearchRepositoriesAutoConfiguration.class
 })
 @EnableJpaAuditing
+@EnableScheduling
 public class ECommerceApplication {
 
     public static void main(String[] args) {

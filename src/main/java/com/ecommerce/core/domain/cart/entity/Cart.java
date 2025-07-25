@@ -106,6 +106,8 @@ public class Cart {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     // Package-private setters for persistence
-    void setId(Long id) { this.id = id; }
     void setItems(List<CartItem> items) { this.items = items; }
+
+    // Public setter for testing
+    public void setId(Long id) { this.id = id; }
 }

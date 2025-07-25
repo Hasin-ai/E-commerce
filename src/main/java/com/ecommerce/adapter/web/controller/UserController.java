@@ -45,7 +45,7 @@ public class UserController {
         String userEmail = authentication.getName();
         Long userId = getUserIdFromEmail(userEmail);
         
-        GetUserRequest request = new GetUserRequest(userId);
+        GetUserRequest request = GetUserRequest.byId(userId);
         GetUserResponse response = getUserUseCase.execute(request);
         
         UserResponseDto userDto = mapToUserResponseDto(response);
@@ -57,7 +57,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDto>> getUserById(
             @PathVariable @NotNull @Positive Long id) {
         
-        GetUserRequest request = new GetUserRequest(id);
+        GetUserRequest request = GetUserRequest.byId(id);
         GetUserResponse response = getUserUseCase.execute(request);
         
         UserResponseDto userDto = mapToUserResponseDto(response);
@@ -73,12 +73,12 @@ public class UserController {
         String userEmail = authentication.getName();
         Long userId = getUserIdFromEmail(userEmail);
         
-        UpdateUserRequest request = new UpdateUserRequest(
-            userId,
-            requestDto.getFirstName(),
-            requestDto.getLastName(),
-            requestDto.getPhone()
-        );
+        UpdateUserRequest request = UpdateUserRequest.builder()
+            .userId(userId)
+            .firstName(requestDto.getFirstName())
+            .lastName(requestDto.getLastName())
+            .phone(requestDto.getPhone())
+            .build();
         
         UpdateUserResponse response = updateUserUseCase.execute(request);
         
@@ -93,12 +93,12 @@ public class UserController {
             @PathVariable @NotNull @Positive Long id,
             @Valid @RequestBody UpdateUserRequestDto requestDto) {
         
-        UpdateUserRequest request = new UpdateUserRequest(
-            id,
-            requestDto.getFirstName(),
-            requestDto.getLastName(),
-            requestDto.getPhone()
-        );
+        UpdateUserRequest request = UpdateUserRequest.builder()
+            .userId(id)
+            .firstName(requestDto.getFirstName())
+            .lastName(requestDto.getLastName())
+            .phone(requestDto.getPhone())
+            .build();
         
         UpdateUserResponse response = updateUserUseCase.execute(request);
         

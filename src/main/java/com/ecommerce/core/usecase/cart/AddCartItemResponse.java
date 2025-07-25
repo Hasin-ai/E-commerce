@@ -1,10 +1,12 @@
 package com.ecommerce.core.usecase.cart;
 
 import com.ecommerce.core.domain.cart.entity.CartItem;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@Builder
 public class AddCartItemResponse {
     private Long cartId;
     private Long userId;

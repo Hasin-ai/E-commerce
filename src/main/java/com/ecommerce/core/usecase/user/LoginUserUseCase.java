@@ -4,6 +4,7 @@ import com.ecommerce.core.domain.user.entity.User;
 import com.ecommerce.core.domain.user.repository.UserRepository;
 import com.ecommerce.core.domain.user.valueobject.Email;
 import com.ecommerce.infrastructure.security.JwtTokenProvider;
+import com.ecommerce.shared.exception.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,16 +28,16 @@ public class LoginUserUseCase {
         // Find user by email
         Email email = new Email(request.getEmail());
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+            .orElseThrow(() -> new AuthenticationException("Invalid credentials"));
 
         // Verify password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword().getValue())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new AuthenticationException("Invalid credentials");
         }
 
         // Check if user is active
         if (!user.isActive()) {
-            throw new RuntimeException("Account is deactivated");
+            throw new AuthenticationException("Account is deactivated");
         }
 
         // Generate JWT token

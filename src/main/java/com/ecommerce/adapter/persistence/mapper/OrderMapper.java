@@ -4,6 +4,8 @@ import com.ecommerce.core.domain.order.entity.Order;
 import com.ecommerce.core.domain.order.entity.OrderStatus;
 import com.ecommerce.core.domain.order.entity.OrderItem;
 import com.ecommerce.core.domain.order.entity.Address;
+import com.ecommerce.core.domain.user.entity.User;
+import com.ecommerce.core.domain.user.repository.UserRepository;
 import com.ecommerce.adapter.persistence.entity.OrderEntity;
 import com.ecommerce.adapter.persistence.entity.OrderItemEntity;
 import com.ecommerce.adapter.persistence.entity.OrderAddressEntity;
@@ -15,6 +17,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class OrderMapper {
+
+    private final UserRepository userRepository;
+
+    public OrderMapper(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public OrderEntity toEntity(Order order) {
         if (order == null) {
@@ -43,10 +51,14 @@ public class OrderMapper {
             .collect(Collectors.toList());
         entity.setItems(itemEntities);
 
+        // Get user information for addresses
+        User user = userRepository.findById(order.getUserId())
+            .orElse(null);
+
         // Map addresses
         List<OrderAddressEntity> addressEntities = List.of(
-            toAddressEntity(order.getShippingAddress(), entity, OrderAddressEntity.AddressType.SHIPPING),
-            toAddressEntity(order.getBillingAddress(), entity, OrderAddressEntity.AddressType.BILLING)
+            toAddressEntity(order.getShippingAddress(), entity, OrderAddressEntity.AddressType.SHIPPING, user),
+            toAddressEntity(order.getBillingAddress(), entity, OrderAddressEntity.AddressType.BILLING, user)
         );
         entity.setAddresses(addressEntities);
 
@@ -65,10 +77,10 @@ public class OrderMapper {
         if (entity.getAddresses() != null) {
             for (OrderAddressEntity addressEntity : entity.getAddresses()) {
                 Address address = new Address(
-                    addressEntity.getStreet(),
+                    addressEntity.getAddressLine1(),
                     addressEntity.getCity(),
                     addressEntity.getState(),
-                    addressEntity.getZipCode(),
+                    addressEntity.getPostalCode(),
                     addressEntity.getCountry()
                 );
                 
@@ -142,22 +154,38 @@ public class OrderMapper {
         entity.setOrder(orderEntity);
         entity.setProductId(item.getProductId());
         entity.setProductName(item.getProductName());
-        entity.setProductSku(item.getProductSku());
+        entity.setProductSku(item.getProductSku() != null ? item.getProductSku() : "SKU-" + item.getProductId());
         entity.setQuantity(item.getQuantity());
         entity.setUnitPrice(item.getUnitPrice());
         entity.setTotalPrice(item.getTotalPrice());
         return entity;
     }
 
-    private OrderAddressEntity toAddressEntity(Address address, OrderEntity orderEntity, OrderAddressEntity.AddressType type) {
+    private OrderAddressEntity toAddressEntity(Address address, OrderEntity orderEntity, OrderAddressEntity.AddressType type, User user) {
         OrderAddressEntity entity = new OrderAddressEntity();
         entity.setOrder(orderEntity);
         entity.setAddressType(type);
-        entity.setStreet(address.getStreet());
+        entity.setAddressLine1(address.getStreet());
         entity.setCity(address.getCity());
         entity.setState(address.getState());
-        entity.setZipCode(address.getZipCode());
+        entity.setPostalCode(address.getZipCode());
         entity.setCountry(address.getCountry());
+        
+        // Set user information for the address
+        if (user != null) {
+            entity.setFirstName(user.getFirstName());
+            entity.setLastName(user.getLastName());
+            if (user.getPhone() != null) {
+                entity.setPhone(user.getPhone().getValue());
+            }
+        } else {
+            // Fallback values
+            entity.setFirstName("Customer");
+            entity.setLastName("User");
+        }
+        
+        entity.setCreatedAt(java.time.LocalDateTime.now());
+        
         return entity;
     }
 

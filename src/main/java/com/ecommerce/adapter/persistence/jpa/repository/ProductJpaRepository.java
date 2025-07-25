@@ -35,7 +35,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductJpaEntity, Lo
     @Query("SELECT p FROM ProductJpaEntity p WHERE p.isActive = true AND p.name LIKE %:name%")
     List<ProductJpaEntity> findActiveProductsByNameContaining(@Param("name") String name);
 
-    @Query("SELECT p FROM ProductJpaEntity p JOIN p.categories c WHERE c.id = :categoryId")
+    @Query("SELECT p FROM ProductJpaEntity p WHERE p.categoryId = :categoryId")
     List<ProductJpaEntity> findByCategoryId(@Param("categoryId") Long categoryId);
 
     @Query("SELECT p FROM ProductJpaEntity p WHERE p.isActive = true AND p.basePrice BETWEEN :minPrice AND :maxPrice")

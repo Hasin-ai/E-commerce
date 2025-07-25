@@ -50,7 +50,7 @@ public class OrderEntity {
     @Column(name = "tracking_number")
     private String trackingNumber;
 
-    @Column(name = "estimated_delivery")
+    @Column(name = "estimated_delivery_at")
     private LocalDateTime estimatedDelivery;
 
     @Column(name = "created_at", nullable = false)

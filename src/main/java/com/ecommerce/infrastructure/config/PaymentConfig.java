@@ -56,12 +56,12 @@ public class PaymentConfig {
     }
 
     @Bean
-    public GetProductUseCase getProductUseCase(com.ecommerce.adapter.persistence.implementation.ProductRepositoryImpl productRepository) {
+    public GetProductUseCase getProductUseCase(com.ecommerce.core.domain.product.repository.ProductRepository productRepository) {
         return new GetProductUseCase(productRepository);
     }
 
     @Bean
-    public GetProductsUseCase getProductsUseCase(com.ecommerce.adapter.persistence.implementation.ProductRepositoryImpl productRepository) {
+    public GetProductsUseCase getProductsUseCase(com.ecommerce.core.domain.product.repository.ProductRepository productRepository) {
         return new GetProductsUseCase(productRepository);
     }
 
@@ -73,7 +73,7 @@ public class PaymentConfig {
     @Bean
     public AddCartItemUseCase addCartItemUseCase(
             CartRepository cartRepository,
-            com.ecommerce.adapter.persistence.implementation.ProductRepositoryImpl productRepository) {
+            com.ecommerce.core.domain.product.repository.ProductRepository productRepository) {
         return new AddCartItemUseCase(cartRepository, productRepository);
     }
 }

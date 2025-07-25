@@ -20,7 +20,7 @@ public class PaymentJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_id")
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "order_id", nullable = false)

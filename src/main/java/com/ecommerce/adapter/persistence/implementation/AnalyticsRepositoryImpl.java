@@ -24,7 +24,7 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
     private final ObjectMapper objectMapper;
     
     @Override
-    public void trackEvent(AnalyticsEvent event) {
+    public AnalyticsEvent trackEvent(AnalyticsEvent event) {
         AnalyticsEventEntity entity = mapper.toEntity(event);
         
         // Convert properties map to JSON string
@@ -36,7 +36,13 @@ public class AnalyticsRepositoryImpl implements AnalyticsRepository {
             }
         }
         
-        jpaRepository.save(entity);
+        AnalyticsEventEntity savedEntity = jpaRepository.save(entity);
+        return mapper.toDomain(savedEntity);
+    }
+    
+    @Override
+    public AnalyticsEvent save(AnalyticsEvent event) {
+        return trackEvent(event);
     }
     
     @Override

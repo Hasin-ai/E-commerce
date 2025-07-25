@@ -1,7 +1,7 @@
 package com.ecommerce.core.usecase.product;
 
 import com.ecommerce.core.domain.product.entity.Product;
-import com.ecommerce.adapter.persistence.implementation.ProductRepositoryImpl;
+import com.ecommerce.core.domain.product.repository.ProductRepository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,9 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GetProductsUseCase {
 
-    private final ProductRepositoryImpl productRepository;
+    private final ProductRepository productRepository;
 
-    public GetProductsUseCase(ProductRepositoryImpl productRepository) {
+    public GetProductsUseCase(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
@@ -52,7 +52,7 @@ public class GetProductsUseCase {
             product.getSku(),
             product.getPrice().getAmount(),
             null, // discountPrice - can be enhanced later
-            product.getCategoryId() != null ? Long.parseLong(product.getCategoryId()) : null,
+            product.getCategoryId(),
             product.getImageUrls() != null && !product.getImageUrls().isEmpty() 
                 ? product.getImageUrls().get(0) : null,
             product.getStockQuantity(),
