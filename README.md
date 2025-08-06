@@ -606,9 +606,6 @@ feat(payment): add Stripe webhook handling
 Closes #123
 ```
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
@@ -650,34 +647,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Check email credentials
 - Test email connectivity
 - Review email templates
-
-## 🗺️ Roadmap
-
-### Phase 1 (Current)
-- [x] Core e-commerce functionality
-- [x] User management
-- [x] Product catalog
-- [x] Shopping cart
-- [x] Order processing
-- [x] Payment integration
-
-### Phase 2 (Current)
-- [x] Advanced search with Elasticsearch
-- [x] Real-time notifications
-- [x] Inventory management
-- [x] Multi-vendor support
-- [x] Advanced analytics dashboard
-
-### Phase 3 (Future)
-- [ ] Mobile app API
-- [ ] Microservices architecture
-- [ ] Event-driven architecture
-- [ ] Machine learning recommendations
-- [ ] International payment methods
-
----
-
-## 📞 Contact
 
 For questions, suggestions, or support, please contact the development team or create an issue in the repository.
 
