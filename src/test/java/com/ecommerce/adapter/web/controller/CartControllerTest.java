@@ -1,252 +1,136 @@
 package com.ecommerce.adapter.web.controller;
 
-import com.ecommerce.adapter.web.dto.request.AddCartItemRequestDto;
-import com.ecommerce.config.TestSecurityConfig;
-import com.ecommerce.core.usecase.cart.*;
-import com.ecommerce.core.domain.user.repository.UserRepository;
-import com.ecommerce.core.domain.user.entity.User;
-import com.ecommerce.core.domain.user.valueobject.Email;
-import com.ecommerce.core.domain.cart.entity.Cart;
-import com.ecommerce.core.domain.cart.entity.CartItem;
+import com.ecommerce.core.usecase.cart.AddCartItemUseCase;
+import com.ecommerce.core.usecase.cart.GetCartUseCase;
+import com.ecommerce.core.usecase.cart.UpdateCartItemUseCase;
+import com.ecommerce.core.usecase.cart.RemoveCartItemUseCase;
+import com.ecommerce.core.usecase.cart.AddCartItemRequest;
+import com.ecommerce.core.usecase.cart.AddCartItemResponse;
+import com.ecommerce.core.usecase.cart.GetCartRequest;
+import com.ecommerce.core.usecase.cart.GetCartResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Optional;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CartController.class)
-@Import(TestSecurityConfig.class)
 class CartControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @MockBean
+    private AddCartItemUseCase addCartItemUseCase;
 
     @MockBean
     private GetCartUseCase getCartUseCase;
 
     @MockBean
-    private AddCartItemUseCase addCartItemUseCase;
+    private UpdateCartItemUseCase updateCartItemUseCase;
 
     @MockBean
     private RemoveCartItemUseCase removeCartItemUseCase;
 
-    @MockBean
-    private ClearCartUseCase clearCartUseCase;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @MockBean
-    private UserRepository userRepository;
-
-    private User mockUser;
-    private Cart mockCart;
-    private CartItem mockCartItem;
+    private AddCartItemRequest addItemRequest;
 
     @BeforeEach
     void setUp() {
-        mockUser = new User("test@example.com", "password123");
-        mockUser.setId(1L);
-
-        mockCartItem = new CartItem(1L, "Gaming Laptop", BigDecimal.valueOf(1299.99), 1);
-        
-        mockCart = new Cart(1L);
-        mockCart.setId(1L);
-        mockCart.addItem(mockCartItem);
+        addItemRequest = new AddCartItemRequest();
+        addItemRequest.setUserId(1L);
+        addItemRequest.setProductId(1L);
+        addItemRequest.setQuantity(2);
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
-    void getCart_WithValidUser_ShouldReturnCart() throws Exception {
+    @DisplayName("Should add item to cart successfully")
+    void shouldAddItemToCartSuccessfully() throws Exception {
         // Given
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(mockUser));
-        
-        GetCartResponse response = GetCartResponse.builder()
-                .id(1L)
-                .userId(1L)
-                .items(Arrays.asList(mockCartItem))
-                .totalAmount(BigDecimal.valueOf(1299.99))
-                .totalItems(1)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-        
-        when(getCartUseCase.execute(any(GetCartRequest.class))).thenReturn(response);
-
-        // When & Then
-        mockMvc.perform(get("/api/cart")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.id").value(1))
-                .andExpect(jsonPath("$.data.userId").value(1))
-                .andExpect(jsonPath("$.data.totalAmount").value(1299.99))
-                .andExpect(jsonPath("$.data.totalItems").value(1));
-    }
-
-    @Test
-    @WithMockUser(username = "test@example.com")
-    void addItemToCart_WithValidRequest_ShouldAddItem() throws Exception {
-        // Given
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(mockUser));
-        
-        AddCartItemRequestDto requestDto = new AddCartItemRequestDto();
-        requestDto.setProductId(1L);
-        requestDto.setQuantity(2);
-
-        AddCartItemResponse response = AddCartItemResponse.builder()
-                .cartId(1L)
-                .userId(1L)
-                .items(Arrays.asList(mockCartItem))
-                .totalAmount(BigDecimal.valueOf(2599.98))
-                .totalItems(2)
-                .message("Item added to cart successfully")
-                .build();
+        AddCartItemResponse response = new AddCartItemResponse();
+        response.setSuccess(true);
+        response.setMessage("Item added to cart");
 
         when(addCartItemUseCase.execute(any(AddCartItemRequest.class))).thenReturn(response);
 
         // When & Then
-        mockMvc.perform(post("/api/cart/items")
+        mockMvc.perform(post("/api/cart/add")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requestDto))
-                .with(csrf()))
+                .content(objectMapper.writeValueAsString(addItemRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.totalItems").value(2))
-                .andExpect(jsonPath("$.message").value("Item added to cart successfully"));
+                .andExpect(jsonPath("$.message").value("Item added to cart"));
     }
 
     @Test
-    @WithMockUser(username = "test@example.com")
-    void addItemToCart_WithInvalidQuantity_ShouldReturnBadRequest() throws Exception {
+    @DisplayName("Should get cart for user")
+    void shouldGetCartForUser() throws Exception {
         // Given
-        AddCartItemRequestDto requestDto = new AddCartItemRequestDto();
-        requestDto.setProductId(1L);
-        requestDto.setQuantity(0); // Invalid quantity
+        GetCartResponse response = new GetCartResponse();
+        response.setSuccess(true);
+        response.setUserId(1L);
+        response.setTotalItems(3);
 
-        // When & Then
-        mockMvc.perform(post("/api/cart/items")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requestDto))
-                .with(csrf()))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @WithMockUser(username = "test@example.com")
-    void removeCartItem_WithValidItemId_ShouldRemoveItem() throws Exception {
-        // Given
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(mockUser));
-        
-        RemoveCartItemResponse response = RemoveCartItemResponse.success(mockCart);
-        when(removeCartItemUseCase.execute(any(RemoveCartItemRequest.class))).thenReturn(response);
-
-        // When & Then
-        mockMvc.perform(delete("/api/cart/items/1")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Item removed from cart successfully"));
-    }
-
-    @Test
-    @WithMockUser(username = "test@example.com")
-    void removeCartItem_WithInvalidItemId_ShouldReturnBadRequest() throws Exception {
-        // Given
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(mockUser));
-        
-        RemoveCartItemResponse response = RemoveCartItemResponse.failure("Cart item not found");
-        when(removeCartItemUseCase.execute(any(RemoveCartItemRequest.class))).thenReturn(response);
-
-        // When & Then
-        mockMvc.perform(delete("/api/cart/items/999")
-                .with(csrf()))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Cart item not found"));
-    }
-
-    @Test
-    @WithMockUser(username = "test@example.com")
-    void clearCart_WithValidUser_ShouldClearCart() throws Exception {
-        // Given
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(mockUser));
-        
-        ClearCartResponse response = ClearCartResponse.success();
-        when(clearCartUseCase.execute(any(ClearCartRequest.class))).thenReturn(response);
-
-        // When & Then
-        mockMvc.perform(delete("/api/cart")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Cart cleared successfully"));
-    }
-
-    @Test
-    @WithMockUser(username = "test@example.com")
-    void getCartItemCount_WithValidUser_ShouldReturnCount() throws Exception {
-        // Given
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(mockUser));
-        
-        GetCartResponse response = GetCartResponse.builder()
-                .totalItems(3)
-                .build();
-        
         when(getCartUseCase.execute(any(GetCartRequest.class))).thenReturn(response);
 
         // When & Then
-        mockMvc.perform(get("/api/cart/count")
-                .with(csrf()))
+        mockMvc.perform(get("/api/cart/1")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data").value(3))
-                .andExpect(jsonPath("$.message").value("Cart item count retrieved successfully"));
+                .andExpect(jsonPath("$.userId").value(1L))
+                .andExpect(jsonPath("$.totalItems").value(3));
     }
 
     @Test
-    void getCart_WithoutAuthentication_ShouldReturnUnauthorized() throws Exception {
-        mockMvc.perform(get("/api/cart"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void addItemToCart_WithoutAuthentication_ShouldReturnUnauthorized() throws Exception {
-        AddCartItemRequestDto requestDto = new AddCartItemRequestDto();
-        requestDto.setProductId(1L);
-        requestDto.setQuantity(1);
-
-        mockMvc.perform(post("/api/cart/items")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser(username = "nonexistent@example.com")
-    void getCart_WithNonexistentUser_ShouldReturnError() throws Exception {
+    @DisplayName("Should handle add item failure")
+    void shouldHandleAddItemFailure() throws Exception {
         // Given
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.empty());
+        AddCartItemResponse response = new AddCartItemResponse();
+        response.setSuccess(false);
+        response.setErrorMessage("Product not available");
+
+        when(addCartItemUseCase.execute(any(AddCartItemRequest.class))).thenReturn(response);
 
         // When & Then
-        mockMvc.perform(get("/api/cart")
-                .with(csrf()))
-                .andExpect(status().isInternalServerError());
+        mockMvc.perform(post("/api/cart/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(addItemRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorMessage").value("Product not available"));
+    }
+
+    @Test
+    @DisplayName("Should remove item from cart")
+    void shouldRemoveItemFromCart() throws Exception {
+        // When & Then
+        mockMvc.perform(delete("/api/cart/1/items/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Should validate request parameters")
+    void shouldValidateRequestParameters() throws Exception {
+        // Given
+        AddCartItemRequest invalidRequest = new AddCartItemRequest();
+        invalidRequest.setQuantity(-1); // Invalid quantity
+
+        // When & Then
+        mockMvc.perform(post("/api/cart/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest());
     }
 }

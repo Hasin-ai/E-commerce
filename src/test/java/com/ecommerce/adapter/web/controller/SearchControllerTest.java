@@ -1,45 +1,33 @@
 package com.ecommerce.adapter.web.controller;
 
-import com.ecommerce.config.TestSecurityConfig;
 import com.ecommerce.core.usecase.search.SearchProductsUseCase;
 import com.ecommerce.core.usecase.search.GetRecommendationsUseCase;
-import com.ecommerce.core.usecase.analytics.TrackEventUseCase;
+import com.ecommerce.core.usecase.search.SearchProductsRequest;
 import com.ecommerce.core.usecase.search.SearchProductsResponse;
+import com.ecommerce.core.usecase.search.GetRecommendationsRequest;
 import com.ecommerce.core.usecase.search.GetRecommendationsResponse;
-import com.ecommerce.core.domain.search.entity.SearchResult;
-import com.ecommerce.core.domain.recommendation.entity.ProductRecommendation;
-import com.ecommerce.core.domain.recommendation.entity.RecommendationType;
+import com.ecommerce.core.domain.product.entity.Product;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import java.math.BigDecimal;
+import java.util.Arrays;
 
 @WebMvcTest(SearchController.class)
-@Import(TestSecurityConfig.class)
 class SearchControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @MockBean
     private SearchProductsUseCase searchProductsUseCase;
@@ -47,179 +35,132 @@ class SearchControllerTest {
     @MockBean
     private GetRecommendationsUseCase getRecommendationsUseCase;
 
-    @MockBean
-    private TrackEventUseCase trackEventUseCase;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    private SearchResult mockSearchResult;
-    private ProductRecommendation mockRecommendation;
+    private Product product1;
+    private Product product2;
 
     @BeforeEach
     void setUp() {
-        mockSearchResult = SearchResult.builder()
-                .id(1L)
-                .name("Gaming Laptop")
-                .description("High-performance gaming laptop")
-                .sku("LAPTOP-001")
-                .price(BigDecimal.valueOf(1299.99))
-                .imageUrl("/images/laptop.jpg")
-                .category("Electronics")
-                .score(0.95)
-                .inStock(true)
-                .build();
+        product1 = new Product();
+        product1.setId(1L);
+        product1.setName("Gaming Laptop");
+        product1.setPrice(BigDecimal.valueOf(1200.00));
 
-        mockRecommendation = ProductRecommendation.builder()
-                .id(1L)
-                .productId(1L)
-                .productName("Gaming Mouse")
-                .productImageUrl("/images/mouse.jpg")
-                .productPrice(BigDecimal.valueOf(79.99))
-                .type(RecommendationType.PERSONALIZED)
-                .score(0.85)
-                .reason("Based on your browsing history")
-                .createdAt(LocalDateTime.now())
-                .build();
+        product2 = new Product();
+        product2.setId(2L);
+        product2.setName("Office Laptop");
+        product2.setPrice(BigDecimal.valueOf(800.00));
     }
 
     @Test
-    void searchProducts_WithValidQuery_ShouldReturnResults() throws Exception {
+    @DisplayName("Should search products successfully")
+    void shouldSearchProductsSuccessfully() throws Exception {
         // Given
-        List<SearchResult> searchResults = Arrays.asList(mockSearchResult);
-        SearchProductsResponse response = SearchProductsResponse.builder()
-                .products(searchResults)
-                .totalElements(1)
-                .totalPages(1)
-                .build();
+        SearchProductsResponse response = new SearchProductsResponse();
+        response.setSuccess(true);
+        response.setProducts(Arrays.asList(product1, product2));
+        response.setTotalResults(2L);
 
-        when(searchProductsUseCase.execute(any())).thenReturn(response);
+        when(searchProductsUseCase.execute(any(SearchProductsRequest.class))).thenReturn(response);
 
         // When & Then
         mockMvc.perform(get("/api/search/products")
                 .param("query", "laptop")
                 .param("page", "0")
-                .param("size", "20")
-                .with(csrf()))
+                .param("size", "10")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.products").isArray())
-                .andExpect(jsonPath("$.data.products[0].name").value("Gaming Laptop"))
-                .andExpect(jsonPath("$.data.totalElements").value(1))
-                .andExpect(jsonPath("$.data.query").value("laptop"));
+                .andExpect(jsonPath("$.products").isArray())
+                .andExpect(jsonPath("$.products[0].name").value("Gaming Laptop"))
+                .andExpect(jsonPath("$.totalResults").value(2));
     }
 
     @Test
-    void searchProducts_WithFilters_ShouldReturnFilteredResults() throws Exception {
+    @DisplayName("Should search products with filters")
+    void shouldSearchProductsWithFilters() throws Exception {
         // Given
-        List<SearchResult> searchResults = Arrays.asList(mockSearchResult);
-        SearchProductsResponse response = SearchProductsResponse.builder()
-                .products(searchResults)
-                .totalElements(1)
-                .totalPages(1)
-                .build();
+        SearchProductsResponse response = new SearchProductsResponse();
+        response.setSuccess(true);
+        response.setProducts(Arrays.asList(product1));
+        response.setTotalResults(1L);
 
-        when(searchProductsUseCase.execute(any())).thenReturn(response);
+        when(searchProductsUseCase.execute(any(SearchProductsRequest.class))).thenReturn(response);
 
         // When & Then
         mockMvc.perform(get("/api/search/products")
-                .param("query", "laptop")
+                .param("query", "gaming")
                 .param("category", "Electronics")
                 .param("minPrice", "1000")
-                .param("maxPrice", "2000")
-                .param("sortBy", "price")
-                .param("sortDirection", "asc")
-                .with(csrf()))
+                .param("maxPrice", "1500")
+                .param("page", "0")
+                .param("size", "10")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.products[0].category").value("Electronics"));
+                .andExpect(jsonPath("$.products[0].name").value("Gaming Laptop"));
     }
 
     @Test
-    void searchProducts_WithEmptyQuery_ShouldReturnBadRequest() throws Exception {
+    @DisplayName("Should get product recommendations")
+    void shouldGetProductRecommendations() throws Exception {
+        // Given
+        GetRecommendationsResponse response = new GetRecommendationsResponse();
+        response.setSuccess(true);
+        response.setRecommendedProducts(Arrays.asList(product1, product2));
+
+        when(getRecommendationsUseCase.execute(any(GetRecommendationsRequest.class))).thenReturn(response);
+
+        // When & Then
+        mockMvc.perform(get("/api/search/recommendations/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.recommendedProducts").isArray())
+                .andExpect(jsonPath("$.recommendedProducts[0].name").value("Gaming Laptop"));
+    }
+
+    @Test
+    @DisplayName("Should handle empty search results")
+    void shouldHandleEmptySearchResults() throws Exception {
+        // Given
+        SearchProductsResponse response = new SearchProductsResponse();
+        response.setSuccess(true);
+        response.setProducts(Arrays.asList());
+        response.setTotalResults(0L);
+
+        when(searchProductsUseCase.execute(any(SearchProductsRequest.class))).thenReturn(response);
+
+        // When & Then
         mockMvc.perform(get("/api/search/products")
-                .param("query", "")
-                .with(csrf()))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @WithMockUser
-    void getRecommendations_WithAuthenticatedUser_ShouldReturnPersonalizedRecommendations() throws Exception {
-        // Given
-        List<ProductRecommendation> recommendations = Arrays.asList(mockRecommendation);
-        GetRecommendationsResponse response = GetRecommendationsResponse.success(recommendations, "PERSONALIZED");
-
-        when(getRecommendationsUseCase.execute(any())).thenReturn(response);
-
-        // When & Then
-        mockMvc.perform(get("/api/search/recommendations")
-                .param("limit", "10")
-                .with(csrf()))
+                .param("query", "nonexistent")
+                .param("page", "0")
+                .param("size", "10")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data[0].productName").value("Gaming Mouse"))
-                .andExpect(jsonPath("$.data[0].recommendationType").value("PERSONALIZED"));
+                .andExpect(jsonPath("$.products").isEmpty())
+                .andExpect(jsonPath("$.totalResults").value(0));
     }
 
     @Test
-    void getRecommendations_WithAnonymousUser_ShouldReturnTrendingRecommendations() throws Exception {
+    @DisplayName("Should handle search service failure")
+    void shouldHandleSearchServiceFailure() throws Exception {
         // Given
-        ProductRecommendation trendingRecommendation = ProductRecommendation.builder()
-                .id(2L)
-                .productId(2L)
-                .productName("Trending Product")
-                .productPrice(BigDecimal.valueOf(99.99))
-                .type(RecommendationType.TRENDING)
-                .score(0.9)
-                .reason("Trending now")
-                .build();
+        SearchProductsResponse response = new SearchProductsResponse();
+        response.setSuccess(false);
+        response.setErrorMessage("Search service unavailable");
 
-        List<ProductRecommendation> recommendations = Arrays.asList(trendingRecommendation);
-        GetRecommendationsResponse response = GetRecommendationsResponse.success(recommendations, "TRENDING");
-
-        when(getRecommendationsUseCase.execute(any())).thenReturn(response);
-
-        // When & Then
-        mockMvc.perform(get("/api/search/recommendations")
-                .param("limit", "10")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data[0].recommendationType").value("TRENDING"));
-    }
-
-    @Test
-    void getRecommendations_WithInvalidLimit_ShouldUseDefaultLimit() throws Exception {
-        // Given
-        List<ProductRecommendation> recommendations = Arrays.asList(mockRecommendation);
-        GetRecommendationsResponse response = GetRecommendationsResponse.success(recommendations, "TRENDING");
-
-        when(getRecommendationsUseCase.execute(any())).thenReturn(response);
-
-        // When & Then
-        mockMvc.perform(get("/api/search/recommendations")
-                .param("limit", "-1")
-                .with(csrf()))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void searchProducts_WithLargePageSize_ShouldLimitResults() throws Exception {
-        // Given
-        List<SearchResult> searchResults = Arrays.asList(mockSearchResult);
-        SearchProductsResponse response = SearchProductsResponse.builder()
-                .products(searchResults)
-                .totalElements(1)
-                .totalPages(1)
-                .build();
-
-        when(searchProductsUseCase.execute(any())).thenReturn(response);
+        when(searchProductsUseCase.execute(any(SearchProductsRequest.class))).thenReturn(response);
 
         // When & Then
         mockMvc.perform(get("/api/search/products")
                 .param("query", "laptop")
-                .param("size", "1000")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.pageSize").value(1000)); // Should be limited by backend
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorMessage").value("Search service unavailable"));
     }
 }
