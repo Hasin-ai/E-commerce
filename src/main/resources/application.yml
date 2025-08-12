@@ -1,0 +1,95 @@
+spring:
+  application:
+    name: ecommerce-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ecommerce_db}
+    username: ${DB_USERNAME:myuser}
+    password: ${DB_PASSWORD:mypassword}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+  h2:
+    console:
+      enabled: false
+      path: /h2-console
+
+  flyway:
+    enabled: false
+    # Disabled since PostgreSQL scripts were manually executed
+
+  # Elasticsearch Configuration - Enabled as requested
+  elasticsearch:
+    enabled: false
+    uris: http://localhost:9200
+
+  # Mail Configuration
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:noreply@ecommerce.com}
+    password: ${MAIL_PASSWORD:password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+  security:
+    user:
+      name: ${ADMIN_USERNAME:admin}
+      password: ${ADMIN_PASSWORD:admin123}
+
+# Application Configuration
+app:
+  email:
+    from: ${MAIL_USERNAME:noreply@ecommerce.com}
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+
+# Stripe Configuration
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:sk_test_example}
+  public-key: ${STRIPE_PUBLIC_KEY:pk_test_example}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_example}
+
+# Server Configuration
+server:
+  port: 8080
+
+# Logging Configuration
+logging:
+  level:
+    com.ecommerce: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: OFF
+
+# Management Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# JWT Configuration
+ecommerce:
+  jwt:
+    secret: ${JWT_SECRET:defaultSecretKey}
+    expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds

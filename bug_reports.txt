@@ -1,0 +1,2 @@
+1. IN the get products (all), the default inStock is set to false, should be true.
+2. any time cart is updated, new ids are assigned to existing cart items.
