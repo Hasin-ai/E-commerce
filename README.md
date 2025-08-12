@@ -614,8 +614,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Documentation
 - [API Documentation](E-commerce%20API%20Documentation.md)
-- [Architecture Guide](docs/architecture.md)
-- [Deployment Guide](docs/deployment.md)
 
 ### Getting Help
 - Create an issue for bugs or feature requests
